@@ -16,6 +16,12 @@
     <p class="loading-text">Loading dashboard…</p>
   </div>
 
+  <div id="sale-moment" class="sale-moment" aria-live="polite">
+    <div class="sale-moment-kicker">New Coffee Sale</div>
+    <div class="sale-moment-amount" id="sale-moment-amount">R 0.00</div>
+    <div class="sale-moment-meta" id="sale-moment-meta">Fresh cup paid on Express</div>
+  </div>
+
   <!-- Header -->
   <header class="header">
     <div class="header-left">
@@ -42,6 +48,37 @@
     <div class="hero-transactions" id="hero-transactions">0 transactions</div>
   </section>
 
+  <!-- Signal Row -->
+  <section class="signal-row">
+    <div class="goal-card">
+      <div class="goal-ring" id="goal-ring">
+        <div class="goal-ring-inner">
+          <span id="goal-percent">0%</span>
+          <small>all time</small>
+        </div>
+      </div>
+      <div class="goal-content">
+        <div class="signal-label">All-Time Milestone</div>
+        <div class="signal-value" id="goal-copy">R 0 / R 100,000</div>
+        <div class="goal-track">
+          <div class="goal-track-fill" id="goal-track-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="signal-card">
+      <div class="signal-label">Projected Close</div>
+      <div class="signal-value" id="pace-projection">R 0.00</div>
+      <div class="signal-subcopy" id="pace-copy">Waiting for first sale</div>
+    </div>
+
+    <div class="signal-card">
+      <div class="signal-label">Next Milestone</div>
+      <div class="signal-value" id="milestone-value">R 100,000</div>
+      <div class="signal-subcopy" id="milestone-copy">All-time revenue ladder</div>
+    </div>
+  </section>
+
   <!-- Stats Row -->
   <section class="stats-row">
     <div class="stat-card">
@@ -59,6 +96,14 @@
     <div class="stat-card">
       <div class="stat-label">Best Hour</div>
       <div class="stat-value" id="stat-best-hour">--:00</div>
+    </div>
+    <div class="stat-card all-time-card">
+      <div class="stat-label">All-Time Sales</div>
+      <div class="stat-value" id="stat-all-time-revenue">R 0.00</div>
+    </div>
+    <div class="stat-card all-time-card">
+      <div class="stat-label">All-Time Volume</div>
+      <div class="stat-value" id="stat-all-time-transactions">0</div>
     </div>
   </section>
 

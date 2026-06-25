@@ -45,3 +45,5 @@ Pushes to `main` trigger automatic deployment to Cloud Run via GitHub Actions.
 
 Image: `eu.gcr.io/wigwag-415814/stitch-coffee-dashboard`
 Service: `stitch-coffee-dashboard` in `africa-south1`
+
+Terraform for the Cloud Run service lives in `../WigWag-Infrastructure/terraform/stitch-coffee-dashboard`.

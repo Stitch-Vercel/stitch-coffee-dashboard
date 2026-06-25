@@ -26,6 +26,8 @@ interface DashboardStats {
     status: string
     source: string
     time: string
+    terminal_label: string | null
+    store_name: string | null
   }>
   hourly_breakdown: Array<{
     hour: number
@@ -144,11 +146,20 @@ export async function getStats(merchantId: string): Promise<DashboardStats> {
         status: string
         source: string
         createdAt: Date
+        terminalLabel: string | null
+        storeName: string | null
       }>
     >(Prisma.sql`
-      SELECT ts.amount, ts.status, ts.source, ts."createdAt"
+      SELECT
+        ts.amount,
+        ts.status,
+        ts.source,
+        ts."createdAt",
+        t."friendlyName" AS "terminalLabel",
+        s.name AS "storeName"
       FROM "TerminalSession" ts
       JOIN "Terminal" t ON ts."terminalId" = t.id
+      LEFT JOIN "Store" s ON COALESCE(ts."storeId", t."storeId") = s.id
       WHERE t."merchantId" = ${merchantId}::uuid
       ORDER BY ts."createdAt" DESC
       LIMIT 10
@@ -248,6 +259,8 @@ export async function getStats(merchantId: string): Promise<DashboardStats> {
       status: tx.status,
       source: tx.source,
       time: tx.createdAt.toISOString(),
+      terminal_label: tx.terminalLabel,
+      store_name: tx.storeName,
     })),
     hourly_breakdown: hourlyBreakdown.map((h) => ({
       hour: h.hour,

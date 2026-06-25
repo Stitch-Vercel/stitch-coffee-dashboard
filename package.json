@@ -21,13 +21,15 @@
     "pino": "^9.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/node": "^22.0.0",
     "eslint": "^9.0.0",
     "prettier": "^3.0.0",
     "prisma": "^6.0.0",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.62.0"
   },
   "engines": {
     "node": ">=20"
