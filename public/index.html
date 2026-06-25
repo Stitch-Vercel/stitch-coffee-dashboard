@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920">
+  <title>Miguel's Coffee Bar — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p class="loading-text">Loading dashboard…</p>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <svg class="logo" width="40" height="44" viewBox="0 0 40 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 0L38.66 11V33L20 44L1.34 33V11L20 0Z" fill="#7c5cfc"/>
+        <path d="M20 8L30.39 14V26L20 32L9.61 26V14L20 8Z" fill="#0a0a0f"/>
+        <path d="M20 14L25.2 17V23L20 26L14.8 23V17L20 14Z" fill="#7c5cfc" opacity="0.6"/>
+      </svg>
+      <div class="header-brand">
+        <h1 class="header-title">Miguel's Coffee Bar</h1>
+        <span class="header-subtitle">Powered by <strong>Express</strong></span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="clock-label">SAST</div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-revenue" id="hero-revenue">R 0.00</div>
+    <div class="hero-label">Today's Revenue</div>
+    <div class="hero-transactions" id="hero-transactions">0 transactions</div>
+  </section>
+
+  <!-- Stats Row -->
+  <section class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Transactions Today</div>
+      <div class="stat-value" id="stat-transactions">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Success Rate</div>
+      <div class="stat-value" id="stat-success-rate">0%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Transaction</div>
+      <div class="stat-value" id="stat-avg-transaction">R 0.00</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Best Hour</div>
+      <div class="stat-value" id="stat-best-hour">--:00</div>
+    </div>
+  </section>
+
+  <!-- Middle Section -->
+  <section class="middle-section">
+    <!-- Hourly Activity -->
+    <div class="card hourly-chart-card">
+      <h2 class="card-title">Hourly Activity</h2>
+      <div class="hourly-chart" id="hourly-chart">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card recent-transactions-card">
+      <h2 class="card-title">Recent Transactions</h2>
+      <div class="transactions-feed" id="transactions-feed">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Fun Stats Footer -->
+  <section class="fun-stats">
+    <div class="fun-stat">
+      <span class="fun-stat-emoji">☕</span>
+      <div class="fun-stat-content">
+        <div class="fun-stat-value" id="fun-cups">0</div>
+        <div class="fun-stat-label">Cups Served Today</div>
+      </div>
+    </div>
+    <div class="fun-stat">
+      <span class="fun-stat-emoji">🔥</span>
+      <div class="fun-stat-content">
+        <div class="fun-stat-value" id="fun-streak">0</div>
+        <div class="fun-stat-label">Success Streak</div>
+      </div>
+    </div>
+    <div class="fun-stat">
+      <span class="fun-stat-emoji">📊</span>
+      <div class="fun-stat-content">
+        <div class="fun-stat-value" id="fun-weekly">R 0.00</div>
+        <div class="fun-stat-label">This Week</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ticker -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <span class="ticker-content">Express by Stitch — Card-present payments for South African merchants&nbsp;&nbsp;&nbsp;⬥&nbsp;&nbsp;&nbsp;Express by Stitch — Card-present payments for South African merchants&nbsp;&nbsp;&nbsp;⬥&nbsp;&nbsp;&nbsp;Express by Stitch — Card-present payments for South African merchants&nbsp;&nbsp;&nbsp;⬥&nbsp;&nbsp;&nbsp;</span>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

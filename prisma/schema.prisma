@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TerminalStatus {
+  ACTIVE
+  SUSPENDED
+  UNALLOCATED
+}
+
+enum TerminalSessionStatus {
+  PENDING
+  SUCCESS
+  FAILURE
+}
+
+enum TerminalSessionSource {
+  SHOPIFY_POS
+  DIRECT
+}
+
+enum StoreStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model Merchant {
+  id        String   @id @unique @default(uuid()) @db.Uuid
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  terminals Terminal[]
+  stores    Store[]
+}
+
+model Terminal {
+  id               String         @id @default(uuid()) @db.Uuid
+  stitchTerminalId String?        @unique
+  serialNumber     String         @unique
+  friendlyName     String?
+  status           TerminalStatus @default(UNALLOCATED)
+
+  merchantId String   @db.Uuid
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+
+  storeId String? @db.Uuid
+  store   Store?  @relation(fields: [storeId], references: [id], onDelete: Restrict)
+
+  sessions TerminalSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+}
+
+model TerminalSession {
+  id              String  @id @default(uuid()) @db.Uuid
+  shortId         String  @unique
+  stitchSessionId String  @unique
+  idempotencyKey  String  @unique
+  correlationId   String? @unique
+
+  clientId   String @db.Uuid
+  terminalId String @db.Uuid
+  terminal   Terminal @relation(fields: [terminalId], references: [id])
+
+  storeId String? @db.Uuid
+  store   Store?  @relation(fields: [storeId], references: [id], onDelete: Restrict)
+
+  amount        Int
+  status        TerminalSessionStatus @default(PENDING)
+  failureReason String?
+  source        TerminalSessionSource
+
+  paymentId String? @unique @db.Uuid
+
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([clientId])
+  @@index([terminalId])
+  @@index([status])
+  @@index([storeId])
+}
+
+model Store {
+  id                String      @id @default(uuid()) @db.Uuid
+  merchantId        String      @db.Uuid
+  merchant          Merchant    @relation(fields: [merchantId], references: [id])
+  name              String
+  status            StoreStatus @default(ACTIVE)
+  addressMetadata   Json?       @db.JsonB
+  shopifyLocationId String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  terminals        Terminal[]
+  terminalSessions TerminalSession[]
+
+  @@unique([merchantId, shopifyLocationId])
+  @@index([merchantId])
+  @@index([merchantId, status])
+}
