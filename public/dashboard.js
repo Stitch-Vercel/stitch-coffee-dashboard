@@ -218,14 +218,13 @@
 
   // ---- Recent Transactions ----
   function renderRecentTransactions(transactions) {
-    const items = (transactions || []).filter(isNamedBuyer).slice(0, 10);
-
-    if (!items.length) {
+    if (!transactions || !transactions.length) {
       els.transactionsFeed.innerHTML =
-        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No named buyers yet</div>';
+        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No transactions yet</div>';
       return;
     }
 
+    const items = transactions.slice(0, 10);
     els.transactionsFeed.innerHTML = items
       .map((tx) => {
         const status = String(tx.status || '').toLowerCase();
@@ -247,20 +246,22 @@
   }
 
   function renderLeaderboard(leaderboard) {
-    const namedLeaderboard = (leaderboard || []).filter(isKnownLeaderboardEntry).slice(0, 8);
+    const entries = leaderboard || [];
+    const namedLeaderboard = entries.filter(isKnownLeaderboardEntry);
+    const visibleLeaderboard = (namedLeaderboard.length ? namedLeaderboard : entries).slice(0, 8);
 
-    if (!namedLeaderboard.length) {
+    if (!visibleLeaderboard.length) {
       els.leaderboardFeed.innerHTML =
-        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No named coffee buyers yet</div>';
+        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No coffee buyers yet</div>';
       return;
     }
 
     const maxTransactions = Math.max(
-      ...namedLeaderboard.map((entry) => entry.transactions || 0),
+      ...visibleLeaderboard.map((entry) => entry.transactions || 0),
       1
     );
 
-    els.leaderboardFeed.innerHTML = namedLeaderboard
+    els.leaderboardFeed.innerHTML = visibleLeaderboard
       .map((entry, index) => {
         const progress = Math.max(8, ((entry.transactions || 0) / maxTransactions) * 100);
         const badgeClass = entry.is_known ? 'known' : 'unknown';
@@ -355,7 +356,7 @@
   }
 
   function maybeShowSaleMoment(data) {
-    const newestTx = data.recent_transactions?.find(isNamedBuyer);
+    const newestTx = data.recent_transactions?.[0];
     const newestKey = getTransactionKey(newestTx);
 
     if (!newestKey) return;
