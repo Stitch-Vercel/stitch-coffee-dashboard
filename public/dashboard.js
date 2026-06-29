@@ -113,6 +113,14 @@
     return tx?.buyer_display_name || 'Mystery patron';
   }
 
+  function isNamedBuyer(tx) {
+    return Boolean(tx?.buyer_display_name && tx.buyer_display_name !== 'Mystery patron');
+  }
+
+  function isKnownLeaderboardEntry(entry) {
+    return Boolean(entry?.is_known && entry.display_name && entry.display_name !== 'Mystery patron');
+  }
+
   function getTransactionKey(tx) {
     if (!tx) return null;
     return `${tx.time || ''}:${tx.amount_cents || 0}:${tx.status || ''}`;
@@ -210,13 +218,14 @@
 
   // ---- Recent Transactions ----
   function renderRecentTransactions(transactions) {
-    if (!transactions || !transactions.length) {
+    const items = (transactions || []).filter(isNamedBuyer).slice(0, 10);
+
+    if (!items.length) {
       els.transactionsFeed.innerHTML =
-        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No transactions yet</div>';
+        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No named buyers yet</div>';
       return;
     }
 
-    const items = transactions.slice(0, 10);
     els.transactionsFeed.innerHTML = items
       .map((tx) => {
         const status = String(tx.status || '').toLowerCase();
@@ -238,24 +247,28 @@
   }
 
   function renderLeaderboard(leaderboard) {
-    if (!leaderboard || !leaderboard.length) {
+    const namedLeaderboard = (leaderboard || []).filter(isKnownLeaderboardEntry).slice(0, 8);
+
+    if (!namedLeaderboard.length) {
       els.leaderboardFeed.innerHTML =
-        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No coffee buyers yet</div>';
+        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No named coffee buyers yet</div>';
       return;
     }
 
-    const maxTransactions = Math.max(...leaderboard.map((entry) => entry.transactions || 0), 1);
+    const maxTransactions = Math.max(
+      ...namedLeaderboard.map((entry) => entry.transactions || 0),
+      1
+    );
 
-    els.leaderboardFeed.innerHTML = leaderboard
-      .slice(0, 8)
-      .map((entry) => {
+    els.leaderboardFeed.innerHTML = namedLeaderboard
+      .map((entry, index) => {
         const progress = Math.max(8, ((entry.transactions || 0) / maxTransactions) * 100);
         const badgeClass = entry.is_known ? 'known' : 'unknown';
         const purchaseCopy = `${(entry.transactions || 0).toLocaleString()} cups`;
 
         return `
         <div class="leaderboard-item ${badgeClass}">
-          <div class="leaderboard-rank">${entry.rank || '-'}</div>
+          <div class="leaderboard-rank">${index + 1}</div>
           <div class="leaderboard-main">
             <div class="leaderboard-topline">
               <span class="leaderboard-name">${escapeHtml(entry.display_name || 'Coffee buyer')}</span>
@@ -342,7 +355,7 @@
   }
 
   function maybeShowSaleMoment(data) {
-    const newestTx = data.recent_transactions?.[0];
+    const newestTx = data.recent_transactions?.find(isNamedBuyer);
     const newestKey = getTransactionKey(newestTx);
 
     if (!newestKey) return;
