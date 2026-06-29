@@ -1,12 +1,12 @@
-# Stitch Coffee Dashboard
+# Coffee Dashboard
 
-A lightweight dashboard for Miguel's Coffee Bar showing real-time terminal payment stats from the Express/Stitch platform.
+A lightweight internal dashboard showing live terminal payment stats for a coffee shop.
 
 ## Architecture
 
 - **Fastify** server serving a static dashboard + JSON stats API
-- **Prisma** connecting to the WigWag read replica (PostgreSQL)
-- Deployed on **Cloud Run** in `africa-south1`
+- **Vercel serverless functions** for hosted API routes
+- **Prisma** connecting to PostgreSQL
 
 ## Local Development
 
@@ -19,7 +19,7 @@ pnpm prisma:generate
 
 # Set up environment
 export DATABASE_URL="postgresql://..."
-export MERCHANT_ID="519a484c-d7e2-42d8-b193-3315f7246d01"
+export MERCHANT_ID="..."
 
 # Run dev server
 pnpm dev
@@ -41,9 +41,9 @@ All monetary values are in **cents (ZAR)**. Times are calculated in **SAST (UTC+
 
 ## Deployment
 
-Pushes to `main` trigger automatic deployment to Cloud Run via GitHub Actions.
+Deploy with Vercel.
 
-Image: `eu.gcr.io/wigwag-415814/stitch-coffee-dashboard`
-Service: `stitch-coffee-dashboard` in `africa-south1`
+Required Vercel environment variables:
 
-Terraform for the Cloud Run service lives in `../WigWag-Infrastructure/terraform/stitch-coffee-dashboard`.
+- `DATABASE_URL`
+- `MERCHANT_ID`
