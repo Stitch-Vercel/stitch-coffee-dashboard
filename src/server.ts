@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { config } from './config.js'
@@ -8,6 +9,9 @@ import { apiRoute } from './routes/api.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const publicRoot = fs.existsSync(path.join(__dirname, 'index.html'))
+  ? __dirname
+  : path.join(__dirname, '..', 'public')
 
 const app = Fastify({
   logger: {
@@ -17,7 +21,7 @@ const app = Fastify({
 
 // Serve static files from public/
 await app.register(fastifyStatic, {
-  root: path.join(__dirname, '..', 'public'),
+  root: publicRoot,
   prefix: '/',
 })
 

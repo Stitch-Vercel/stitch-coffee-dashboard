@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsup src/server.ts --format esm --out-dir dist",
+    "build": "tsup src/server.ts --format esm --out-dir dist && cp -R public/. dist/",
     "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "typecheck": "tsc --noEmit",
