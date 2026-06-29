@@ -39,6 +39,7 @@
     milestoneCopy: $('milestone-copy'),
     hourlyChart: $('hourly-chart'),
     transactionsFeed: $('transactions-feed'),
+    leaderboardFeed: $('leaderboard-feed'),
     funCups: $('fun-cups'),
     funStreak: $('fun-streak'),
     funWeekly: $('fun-weekly'),
@@ -231,6 +232,43 @@
       .join('');
   }
 
+  function renderLeaderboard(leaderboard) {
+    if (!leaderboard || !leaderboard.length) {
+      els.leaderboardFeed.innerHTML =
+        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No coffee buyers yet</div>';
+      return;
+    }
+
+    const maxTransactions = Math.max(...leaderboard.map((entry) => entry.transactions || 0), 1);
+
+    els.leaderboardFeed.innerHTML = leaderboard
+      .slice(0, 8)
+      .map((entry) => {
+        const progress = Math.max(8, ((entry.transactions || 0) / maxTransactions) * 100);
+        const badgeClass = entry.is_known ? 'known' : 'unknown';
+        const purchaseCopy = `${(entry.transactions || 0).toLocaleString()} cups`;
+
+        return `
+        <div class="leaderboard-item ${badgeClass}">
+          <div class="leaderboard-rank">${entry.rank || '-'}</div>
+          <div class="leaderboard-main">
+            <div class="leaderboard-topline">
+              <span class="leaderboard-name">${escapeHtml(entry.display_name || 'Coffee buyer')}</span>
+              <span class="leaderboard-value">${formatCompactZAR(entry.revenue_cents || 0)}</span>
+            </div>
+            <div class="leaderboard-progress">
+              <div class="leaderboard-progress-fill" style="width: ${progress}%"></div>
+            </div>
+            <div class="leaderboard-subline">
+              <span>${purchaseCopy}</span>
+              <span>${entry.is_known ? 'staff card' : 'unclaimed'}</span>
+            </div>
+          </div>
+        </div>`;
+      })
+      .join('');
+  }
+
   function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
@@ -365,6 +403,9 @@
 
     // Recent transactions
     renderRecentTransactions(data.recent_transactions);
+
+    // Leaderboard
+    renderLeaderboard(data.leaderboard);
 
     // Fun stats
     animateNumber(els.funCups, today.successfulTransactions ?? 0, (v) => Math.round(v).toLocaleString());

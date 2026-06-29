@@ -407,7 +407,7 @@ body::before {
 /* ---- Middle Section ---- */
 .middle-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.05fr 1fr 1.08fr;
   gap: 14px;
   padding: 14px 40px;
   flex: 1;
@@ -564,6 +564,103 @@ body::before {
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   flex-shrink: 0;
+}
+
+/* ---- Leaderboard ---- */
+.leaderboard-feed {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--card-radius);
+  background: rgba(255, 255, 255, 0.026);
+  animation: feedSlideIn 0.4s ease-out both;
+}
+
+.leaderboard-item.known {
+  border-color: rgba(245, 158, 11, 0.18);
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.08), rgba(255, 255, 255, 0.024));
+}
+
+.leaderboard-item:nth-child(n+2) { animation-delay: 0.04s; }
+.leaderboard-item:nth-child(n+3) { animation-delay: 0.08s; }
+.leaderboard-item:nth-child(n+4) { animation-delay: 0.12s; }
+.leaderboard-item:nth-child(n+5) { animation-delay: 0.16s; }
+
+.leaderboard-rank {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--accent-amber);
+  font-size: 0.82rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.leaderboard-topline,
+.leaderboard-subline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.leaderboard-name {
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderboard-value {
+  color: var(--text-primary);
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-progress {
+  height: 7px;
+  margin: 7px 0 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.leaderboard-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-amber), var(--accent-cyan));
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.22);
+  transition: width 0.8s ease;
+}
+
+.leaderboard-subline {
+  color: var(--text-secondary);
+  font-size: 0.64rem;
+  text-transform: uppercase;
 }
 
 /* ---- Fun Stats Footer ---- */

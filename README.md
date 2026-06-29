@@ -34,10 +34,13 @@ Returns dashboard statistics including:
 
 - Today/week/month/all-time transaction counts and revenue
 - Recent transactions list
+- Coffee buyer leaderboard
 - Hourly breakdown for today
 - Consecutive success streak and best hour
 
 All monetary values are in **cents (ZAR)**. Times are calculated in **SAST (UTC+2)**.
+
+Known coffee buyers are resolved by the Express internal API. Vercel receives display names only, not raw card identifiers.
 
 ## Deployment
 
