@@ -6,7 +6,7 @@ A lightweight internal dashboard showing live terminal payment stats for a coffe
 
 - **Fastify** server serving a static dashboard + JSON stats API
 - **Vercel serverless functions** for hosted API routes
-- **Prisma** connecting to PostgreSQL
+- **Express internal API** as the only live stats data source
 
 ## Local Development
 
@@ -14,12 +14,9 @@ A lightweight internal dashboard showing live terminal payment stats for a coffe
 # Install dependencies
 pnpm install
 
-# Generate Prisma client
-pnpm prisma:generate
-
 # Set up environment
-export DATABASE_URL="postgresql://..."
-export MERCHANT_ID="..."
+export EXPRESS_INTERNAL_API_URL="https://express.stitch.money/api/internal/stitch-coffee-dashboard/stats"
+export EXPRESS_INTERNAL_API_TOKEN="..."
 
 # Run dev server
 pnpm dev
@@ -28,10 +25,13 @@ pnpm dev
 ## API
 
 ### `GET /health`
+
 Health check endpoint for Cloud Run.
 
 ### `GET /api/stats`
+
 Returns dashboard statistics including:
+
 - Today/week/month/all-time transaction counts and revenue
 - Recent transactions list
 - Hourly breakdown for today
@@ -45,5 +45,11 @@ Deploy with Vercel.
 
 Required Vercel environment variables:
 
-- `DATABASE_URL`
-- `MERCHANT_ID`
+- `EXPRESS_INTERNAL_API_URL`
+- `EXPRESS_INTERNAL_API_TOKEN`
+
+Production `EXPRESS_INTERNAL_API_URL`:
+
+```text
+https://express.stitch.money/api/internal/stitch-coffee-dashboard/stats
+```

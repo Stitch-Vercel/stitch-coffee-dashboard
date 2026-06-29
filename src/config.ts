@@ -10,6 +10,7 @@ function requireEnv(name: string): string {
 
 export const config = {
   port: parseInt(process.env.PORT || '8080', 10),
-  merchantId: requireEnv('MERCHANT_ID'),
   refreshInterval: parseInt(process.env.REFRESH_INTERVAL || '30000', 10),
+  expressInternalApiUrl: requireEnv('EXPRESS_INTERNAL_API_URL'),
+  expressInternalApiToken: requireEnv('EXPRESS_INTERNAL_API_TOKEN'),
 } as const

@@ -1,11 +1,10 @@
 import type { FastifyInstance } from 'fastify'
-import { getStats } from '../services/stats.js'
-import { config } from '../config.js'
+import { getExpressStats } from '../services/express-stats.js'
 
 export async function apiRoute(app: FastifyInstance) {
   app.get('/api/stats', async (_request, reply) => {
     try {
-      const stats = await getStats(config.merchantId)
+      const stats = await getExpressStats()
       return stats
     } catch (error) {
       app.log.error(error, 'Failed to fetch stats')

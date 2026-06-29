@@ -1,6 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { config } from '../src/config.js'
-import { getStats } from '../src/services/stats.js'
+import { getExpressStats } from '../src/services/express-stats.js'
 
 export default async function handler(request: IncomingMessage, response: ServerResponse) {
   if (request.method !== 'GET') {
@@ -11,7 +10,7 @@ export default async function handler(request: IncomingMessage, response: Server
   }
 
   try {
-    const stats = await getStats(config.merchantId)
+    const stats = await getExpressStats()
     response.statusCode = 200
     response.setHeader('Content-Type', 'application/json')
     response.end(JSON.stringify(stats))
