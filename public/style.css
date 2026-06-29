@@ -556,6 +556,9 @@ body::before {
 .tx-time {
   font-size: 0.67rem;
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tx-amount {

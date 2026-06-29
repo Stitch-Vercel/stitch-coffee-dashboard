@@ -109,6 +109,10 @@
     return tx?.store_name || tx?.terminal_label || normalizeSource(tx?.source);
   }
 
+  function getBuyerDisplayName(tx) {
+    return tx?.buyer_display_name || 'Mystery patron';
+  }
+
   function getTransactionKey(tx) {
     if (!tx) return null;
     return `${tx.time || ''}:${tx.amount_cents || 0}:${tx.status || ''}`;
@@ -218,13 +222,14 @@
         const status = String(tx.status || '').toLowerCase();
         const statusClass = status === 'failure' ? 'failed' : status;
         const place = getTransactionPlace(tx);
+        const buyerName = getBuyerDisplayName(tx);
 
         return `
         <div class="tx-item ${statusClass}">
           <span class="tx-status-dot ${statusClass}"></span>
           <div class="tx-details">
-            <div class="tx-id">${escapeHtml(place)}</div>
-            <div class="tx-time">${relativeTime(tx.time)}</div>
+            <div class="tx-id">${escapeHtml(buyerName)}</div>
+            <div class="tx-time">${relativeTime(tx.time)} · ${escapeHtml(place)}</div>
           </div>
           <div class="tx-amount">${formatZAR(tx.amount_cents)}</div>
         </div>`;
@@ -354,7 +359,7 @@
     if (newestTx.status !== 'SUCCESS') return;
 
     els.saleMomentAmount.textContent = formatZAR(newestTx.amount_cents);
-    els.saleMomentMeta.textContent = 'Fresh cup paid on Express';
+    els.saleMomentMeta.textContent = `${getBuyerDisplayName(newestTx)} paid on Express`;
     els.saleMoment.classList.remove('show');
     window.requestAnimationFrame(() => {
       els.saleMoment.classList.add('show');
