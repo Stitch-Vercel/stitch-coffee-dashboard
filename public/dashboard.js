@@ -39,6 +39,7 @@
     milestoneCopy: $('milestone-copy'),
     hourlyChart: $('hourly-chart'),
     transactionsFeed: $('transactions-feed'),
+    leaderboardFeed: $('leaderboard-feed'),
     funCups: $('fun-cups'),
     funStreak: $('fun-streak'),
     funWeekly: $('fun-weekly'),
@@ -106,6 +107,10 @@
 
   function getTransactionPlace(tx) {
     return tx?.store_name || tx?.terminal_label || normalizeSource(tx?.source);
+  }
+
+  function getBuyerDisplayName(tx) {
+    return tx?.buyer_display_name || 'Mystery patron';
   }
 
   function getTransactionKey(tx) {
@@ -217,15 +222,53 @@
         const status = String(tx.status || '').toLowerCase();
         const statusClass = status === 'failure' ? 'failed' : status;
         const place = getTransactionPlace(tx);
+        const buyerName = getBuyerDisplayName(tx);
 
         return `
         <div class="tx-item ${statusClass}">
           <span class="tx-status-dot ${statusClass}"></span>
           <div class="tx-details">
-            <div class="tx-id">${escapeHtml(place)}</div>
-            <div class="tx-time">${relativeTime(tx.time)}</div>
+            <div class="tx-id">${escapeHtml(buyerName)}</div>
+            <div class="tx-time">${relativeTime(tx.time)} · ${escapeHtml(place)}</div>
           </div>
           <div class="tx-amount">${formatZAR(tx.amount_cents)}</div>
+        </div>`;
+      })
+      .join('');
+  }
+
+  function renderLeaderboard(leaderboard) {
+    if (!leaderboard || !leaderboard.length) {
+      els.leaderboardFeed.innerHTML =
+        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No coffee buyers yet</div>';
+      return;
+    }
+
+    const maxTransactions = Math.max(...leaderboard.map((entry) => entry.transactions || 0), 1);
+
+    els.leaderboardFeed.innerHTML = leaderboard
+      .slice(0, 8)
+      .map((entry) => {
+        const progress = Math.max(8, ((entry.transactions || 0) / maxTransactions) * 100);
+        const badgeClass = entry.is_known ? 'known' : 'unknown';
+        const purchaseCopy = `${(entry.transactions || 0).toLocaleString()} cups`;
+
+        return `
+        <div class="leaderboard-item ${badgeClass}">
+          <div class="leaderboard-rank">${entry.rank || '-'}</div>
+          <div class="leaderboard-main">
+            <div class="leaderboard-topline">
+              <span class="leaderboard-name">${escapeHtml(entry.display_name || 'Coffee buyer')}</span>
+              <span class="leaderboard-value">${formatCompactZAR(entry.revenue_cents || 0)}</span>
+            </div>
+            <div class="leaderboard-progress">
+              <div class="leaderboard-progress-fill" style="width: ${progress}%"></div>
+            </div>
+            <div class="leaderboard-subline">
+              <span>${purchaseCopy}</span>
+              <span>${entry.is_known ? 'staff card' : 'unclaimed'}</span>
+            </div>
+          </div>
         </div>`;
       })
       .join('');
@@ -316,7 +359,7 @@
     if (newestTx.status !== 'SUCCESS') return;
 
     els.saleMomentAmount.textContent = formatZAR(newestTx.amount_cents);
-    els.saleMomentMeta.textContent = 'Fresh cup paid on Express';
+    els.saleMomentMeta.textContent = `${getBuyerDisplayName(newestTx)} paid on Express`;
     els.saleMoment.classList.remove('show');
     window.requestAnimationFrame(() => {
       els.saleMoment.classList.add('show');
@@ -365,6 +408,9 @@
 
     // Recent transactions
     renderRecentTransactions(data.recent_transactions);
+
+    // Leaderboard
+    renderLeaderboard(data.leaderboard);
 
     // Fun stats
     animateNumber(els.funCups, today.successfulTransactions ?? 0, (v) => Math.round(v).toLocaleString());
