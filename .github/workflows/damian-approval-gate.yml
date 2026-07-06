@@ -1,0 +1,46 @@
+name: Damian approval gate
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  damian-approval-gate:
+    name: damian-approval-gate
+    if: github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    env:
+      REQUIRED_APPROVER: damian-stitch
+      GH_TOKEN: ${{ github.token }}
+      PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Require Damian approval for external PRs
+        run: |
+          if [ "$PR_AUTHOR" = "$REQUIRED_APPROVER" ]; then
+            echo "PR authored by ${REQUIRED_APPROVER}; approval gate passed."
+            exit 0
+          fi
+
+          reviews_json="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" --paginate)"
+          approval_count="$(
+            printf '%s\n' "$reviews_json" |
+              jq -s --arg user "$REQUIRED_APPROVER" --arg sha "$HEAD_SHA" \
+                '[.[][] | select(.user.login == $user and .state == "APPROVED" and .commit_id == $sha)] | length'
+          )"
+
+          if [ "$approval_count" -gt 0 ]; then
+            echo "Current PR head was approved by ${REQUIRED_APPROVER}; approval gate passed."
+            exit 0
+          fi
+
+          echo "::error::This PR needs approval from ${REQUIRED_APPROVER} on the current head commit."
+          exit 1
