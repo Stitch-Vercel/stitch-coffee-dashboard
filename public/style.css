@@ -203,6 +203,14 @@ body::before {
   letter-spacing: 0;
 }
 
+.clock-welcome {
+  color: var(--accent-amber);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+
 /* ---- Hero ---- */
 .hero {
   text-align: center;
