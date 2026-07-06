@@ -10,6 +10,7 @@
   const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 06–21
   const BUSINESS_START_HOUR = 6;
   const BUSINESS_END_HOUR = 21;
+  const COFFEE_PRICE_CENTS = 200;
   const ALL_TIME_MILESTONES_CENTS = [5_000_000, 10_000_000, 25_000_000, 50_000_000, 100_000_000];
 
   let lastKnownData = null;
@@ -73,6 +74,11 @@
     }
 
     return formatZAR(value);
+  }
+
+  function getCoffeeCount(cents) {
+    const value = Number.isFinite(Number(cents)) ? Number(cents) : 0;
+    return Math.max(0, Math.round(value / COFFEE_PRICE_CENTS));
   }
 
   function relativeTime(isoString) {
@@ -256,16 +262,20 @@
       return;
     }
 
-    const maxTransactions = Math.max(
-      ...visibleLeaderboard.map((entry) => entry.transactions || 0),
+    const leaderboardWithCups = visibleLeaderboard.map((entry) => ({
+      ...entry,
+      coffee_count: getCoffeeCount(entry.revenue_cents),
+    }));
+    const maxCoffeeCount = Math.max(
+      ...leaderboardWithCups.map((entry) => entry.coffee_count),
       1
     );
 
-    els.leaderboardFeed.innerHTML = visibleLeaderboard
+    els.leaderboardFeed.innerHTML = leaderboardWithCups
       .map((entry, index) => {
-        const progress = Math.max(8, ((entry.transactions || 0) / maxTransactions) * 100);
+        const progress = Math.max(8, (entry.coffee_count / maxCoffeeCount) * 100);
         const badgeClass = entry.is_known ? 'known' : 'unknown';
-        const purchaseCopy = `${(entry.transactions || 0).toLocaleString()} cups`;
+        const purchaseCopy = `${entry.coffee_count.toLocaleString()} cups`;
 
         return `
         <div class="leaderboard-item ${badgeClass}">
@@ -411,7 +421,9 @@
     els.statBestHour.textContent = streak.best_hour || '--:00';
 
     animateNumber(els.statAllTimeRevenue, allTime.total_revenue_cents, formatZAR);
-    animateNumber(els.statAllTimeTransactions, allTime.total_transactions, (v) => Math.round(v).toLocaleString());
+    animateNumber(els.statAllTimeTransactions, getCoffeeCount(allTime.total_revenue_cents), (v) =>
+      Math.round(v).toLocaleString()
+    );
 
     updateAllTimeMilestone(allTime.total_revenue_cents ?? 0);
     updatePace(today.revenue_cents ?? 0);
@@ -427,7 +439,9 @@
     renderLeaderboard(data.leaderboard);
 
     // Fun stats
-    animateNumber(els.funCups, today.successfulTransactions ?? 0, (v) => Math.round(v).toLocaleString());
+    animateNumber(els.funCups, getCoffeeCount(today.revenue_cents), (v) =>
+      Math.round(v).toLocaleString()
+    );
     animateNumber(els.funStreak, streak.consecutive_successes ?? 0, (v) => Math.round(v).toLocaleString());
     animateNumber(els.funWeekly, week.revenue_cents ?? 0, formatZAR);
   }
