@@ -306,7 +306,10 @@
   function renderLeaderboard(leaderboard) {
     const entries = leaderboard || [];
     const namedLeaderboard = entries.filter(isKnownLeaderboardEntry);
-    const visibleLeaderboard = (namedLeaderboard.length ? namedLeaderboard : entries).slice(0, 8);
+    const sorted = (namedLeaderboard.length ? namedLeaderboard : entries)
+      .slice()
+      .sort((a, b) => (b.revenue_cents || 0) - (a.revenue_cents || 0));
+    const visibleLeaderboard = sorted.slice(0, 8);
 
     if (!visibleLeaderboard.length) {
       els.leaderboardFeed.innerHTML =
