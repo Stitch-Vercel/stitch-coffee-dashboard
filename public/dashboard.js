@@ -58,7 +58,7 @@
   function formatZAR(cents) {
     const value = Number.isFinite(Number(cents)) ? Number(cents) : 0;
     const rands = Math.abs(value) / 100;
-    const formatted = rands.toLocaleString('en-ZA', {
+    const formatted = rands.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -74,7 +74,7 @@
     const rands = Math.abs(value) / 100;
 
     if (rands >= 1000) {
-      return `R ${rands.toLocaleString('en-ZA', { maximumFractionDigits: 0 })}`;
+      return `R ${rands.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
     }
 
     return formatZAR(value);
