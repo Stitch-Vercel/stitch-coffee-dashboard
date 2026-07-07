@@ -12,11 +12,14 @@
   const BUSINESS_END_HOUR = 21;
   const COFFEE_PRICE_CENTS = 200;
   const ALL_TIME_MILESTONES_CENTS = [5_000_000, 10_000_000, 25_000_000, 50_000_000, 100_000_000];
+  const GOAL_RING_RADIUS = 29;
+  const GOAL_RING_CIRCUMFERENCE = 2 * Math.PI * GOAL_RING_RADIUS;
 
   let lastKnownData = null;
   let lastSeenTransactionKey = null;
   let saleMomentTimer = null;
   let refreshTimer = null;
+  let heroPopSeq = 0;
 
   // ---- DOM refs ----
   const $ = (id) => document.getElementById(id);
@@ -31,6 +34,7 @@
     statAllTimeRevenue: $('stat-all-time-revenue'),
     statAllTimeTransactions: $('stat-all-time-transactions'),
     goalRing: $('goal-ring'),
+    goalRingProgress: $('goal-ring-progress'),
     goalPercent: $('goal-percent'),
     goalCopy: $('goal-copy'),
     goalTrackFill: $('goal-track-fill'),
@@ -174,6 +178,47 @@
     requestAnimationFrame(tick);
   }
 
+  // ---- Hero Revenue with pop animation ----
+  function animateHeroRevenue(element, targetValue, formatter, duration = 1200) {
+    const safeTargetValue = Number.isFinite(Number(targetValue)) ? Number(targetValue) : 0;
+    const startValue = parseFloat(element.dataset.currentValue || '0');
+    element.dataset.currentValue = String(safeTargetValue);
+
+    if (startValue !== safeTargetValue) {
+      // Trigger pop animation
+      heroPopSeq++;
+      element.style.animation = 'none';
+      element.offsetHeight; // force reflow
+      element.style.animation = heroPopSeq % 2 === 0 ? 'popA 0.6s ease' : 'popB 0.6s ease';
+    }
+
+    if (startValue === safeTargetValue) {
+      element.textContent = formatter(safeTargetValue);
+      return;
+    }
+
+    const startTime = performance.now();
+
+    function easeOut(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function tick(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOut(progress);
+      const currentVal = startValue + (safeTargetValue - startValue) * easedProgress;
+
+      element.textContent = formatter(currentVal);
+
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+
   // ---- Hourly Chart ----
   function renderHourlyChart(hourlyData) {
     hourlyData = hourlyData || {};
@@ -190,14 +235,15 @@
         const count = hourlyData[hour] || 0;
         const pct = (count / maxVal) * 100;
         const isCurrent = hour === currentSASTHour;
-        const isBest = hour === bestHour && count > 0;
+        const countClass = isCurrent ? 'count-current' : count > 0 ? 'count-active' : '';
+        const labelClass = isCurrent ? 'current-hour-label' : '';
         return `
           <div class="hour-row">
-            <span class="hour-label">${formatTime(hour)}</span>
+            <span class="hour-label ${labelClass}">${formatTime(hour)}</span>
             <div class="hour-bar-track">
-              <div class="hour-bar${isCurrent ? ' current-hour' : ''}${isBest ? ' best-hour' : ''}" data-hour="${hour}" style="width: ${pct}%"></div>
+              <div class="hour-bar${isCurrent ? ' current-hour' : ''}" data-hour="${hour}" style="width: ${pct}%"></div>
             </div>
-            <span class="hour-count" data-hour-count="${hour}">${count}</span>
+            <span class="hour-count ${countClass}" data-hour-count="${hour}">${count}</span>
           </div>`;
       }).join('');
     } else {
@@ -205,7 +251,6 @@
         const count = hourlyData[hour] || 0;
         const pct = (count / maxVal) * 100;
         const isCurrent = hour === currentSASTHour;
-        const isBest = hour === bestHour && count > 0;
 
         const bar = els.hourlyChart.querySelector(`[data-hour="${hour}"]`);
         const countEl = els.hourlyChart.querySelector(`[data-hour-count="${hour}"]`);
@@ -213,10 +258,17 @@
         if (bar) {
           bar.style.width = `${pct}%`;
           bar.classList.toggle('current-hour', isCurrent);
-          bar.classList.toggle('best-hour', isBest);
         }
         if (countEl) {
           countEl.textContent = count;
+          countEl.className = `hour-count ${isCurrent ? 'count-current' : count > 0 ? 'count-active' : ''}`;
+        }
+
+        // Update label color
+        const row = bar?.closest('.hour-row');
+        const label = row?.querySelector('.hour-label');
+        if (label) {
+          label.classList.toggle('current-hour-label', isCurrent);
         }
       });
     }
@@ -239,7 +291,7 @@
         const buyerName = getBuyerDisplayName(tx);
 
         return `
-        <div class="tx-item ${statusClass}">
+        <div class="tx-item">
           <span class="tx-status-dot ${statusClass}"></span>
           <div class="tx-details">
             <div class="tx-id">${escapeHtml(buyerName)}</div>
@@ -274,11 +326,10 @@
     els.leaderboardFeed.innerHTML = leaderboardWithCups
       .map((entry, index) => {
         const progress = Math.max(8, (entry.coffee_count / maxCoffeeCount) * 100);
-        const badgeClass = entry.is_known ? 'known' : 'unknown';
         const purchaseCopy = `${entry.coffee_count.toLocaleString()} cups`;
 
         return `
-        <div class="leaderboard-item ${badgeClass}">
+        <div class="leaderboard-item">
           <div class="leaderboard-rank">${index + 1}</div>
           <div class="leaderboard-main">
             <div class="leaderboard-topline">
@@ -290,7 +341,7 @@
             </div>
             <div class="leaderboard-subline">
               <span>${purchaseCopy}</span>
-              <span>${entry.is_known ? 'staff card' : 'unclaimed'}</span>
+              <span>${entry.is_known ? 'STAFF CARD' : 'UNCLAIMED'}</span>
             </div>
           </div>
         </div>`;
@@ -325,11 +376,16 @@
     const progress = Math.min(allTimeRevenueCents / nextMilestone, 1);
     const percent = Math.round(progress * 100);
 
-    els.goalRing.style.setProperty('--goal-progress', `${percent}%`);
+    // Update SVG ring
+    const dashLength = (percent / 100) * GOAL_RING_CIRCUMFERENCE;
+    if (els.goalRingProgress) {
+      els.goalRingProgress.setAttribute('stroke-dasharray', `${dashLength} 999`);
+      els.goalRingProgress.classList.toggle('goal-complete', percent >= 100);
+    }
+
     els.goalPercent.textContent = `${percent}%`;
-    els.goalCopy.textContent = `${formatCompactZAR(allTimeRevenueCents)} / ${formatCompactZAR(nextMilestone)}`;
+    els.goalCopy.innerHTML = `${formatCompactZAR(allTimeRevenueCents)} <span class="signal-value-sub">/ ${formatCompactZAR(nextMilestone)}</span>`;
     els.goalTrackFill.style.width = `${percent}%`;
-    els.goalRing.classList.toggle('goal-complete', percent >= 100);
   }
 
   function updatePace(todayRevenueCents) {
@@ -355,7 +411,7 @@
     const hourlyRunRate = Math.round(todayRevenueCents / elapsedMinutes * 60);
 
     els.paceProjection.textContent = formatZAR(projectedClose);
-    els.paceCopy.textContent = `${formatCompactZAR(hourlyRunRate)} per hour run-rate`;
+    els.paceCopy.innerHTML = `<span class="pace-rate">${formatCompactZAR(hourlyRunRate)}</span> per hour run-rate`;
   }
 
   function updateMilestone(allTimeRevenueCents) {
@@ -406,8 +462,8 @@
     );
 
     // Hero
-    animateNumber(els.heroRevenue, today.revenue_cents, formatZAR, 1200);
-    els.heroTransactions.textContent = `${(today.transactions || 0).toLocaleString()} transactions`;
+    animateHeroRevenue(els.heroRevenue, today.revenue_cents, formatZAR, 1200);
+    els.heroTransactions.innerHTML = `<strong>${(today.transactions || 0).toLocaleString()}</strong> transactions`;
 
     // Stats
     animateNumber(els.statTransactions, today.transactions, (v) => Math.round(v).toLocaleString());

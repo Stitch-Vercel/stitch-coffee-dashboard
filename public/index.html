@@ -6,7 +6,8 @@
   <title>Miguel's Coffee Bar — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,11 +26,9 @@
   <!-- Header -->
   <header class="header">
     <div class="header-left">
-      <svg class="logo" width="40" height="44" viewBox="0 0 40 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 0L38.66 11V33L20 44L1.34 33V11L20 0Z" fill="#7c5cfc"/>
-        <path d="M20 8L30.39 14V26L20 32L9.61 26V14L20 8Z" fill="#0a0a0f"/>
-        <path d="M20 14L25.2 17V23L20 26L14.8 23V17L20 14Z" fill="#7c5cfc" opacity="0.6"/>
-      </svg>
+      <div class="logo-icon">
+        <span class="material-icons">local_cafe</span>
+      </div>
       <div class="header-brand">
         <h1 class="header-title">Miguel's Coffee Bar</h1>
         <span class="header-subtitle">Powered by <strong>Express</strong></span>
@@ -44,22 +43,26 @@
   <!-- Hero -->
   <section class="hero">
     <div class="hero-revenue" id="hero-revenue">R 0.00</div>
-    <div class="hero-label">Today's Revenue</div>
-    <div class="hero-transactions" id="hero-transactions">0 transactions</div>
+    <div class="hero-label">TODAY'S REVENUE</div>
+    <div class="hero-transactions" id="hero-transactions"><strong>0</strong> transactions</div>
   </section>
 
   <!-- Signal Row -->
   <section class="signal-row">
     <div class="goal-card">
-      <div class="goal-ring" id="goal-ring">
+      <div class="goal-ring-wrapper" id="goal-ring">
+        <svg class="goal-ring-svg" width="74" height="74" viewBox="0 0 74 74">
+          <circle class="goal-ring-track" cx="37" cy="37" r="29"></circle>
+          <circle class="goal-ring-progress" id="goal-ring-progress" cx="37" cy="37" r="29" stroke-dasharray="0 999"></circle>
+        </svg>
         <div class="goal-ring-inner">
           <span id="goal-percent">0%</span>
-          <small>all time</small>
+          <small>ALL TIME</small>
         </div>
       </div>
       <div class="goal-content">
         <div class="signal-label">All-Time Milestone</div>
-        <div class="signal-value" id="goal-copy">R 0 / R 100,000</div>
+        <div class="signal-value goal-value" id="goal-copy">R 0 <span class="signal-value-sub">/ R 100,000</span></div>
         <div class="goal-track">
           <div class="goal-track-fill" id="goal-track-fill"></div>
         </div>
@@ -74,7 +77,7 @@
 
     <div class="signal-card">
       <div class="signal-label">Next Milestone</div>
-      <div class="signal-value" id="milestone-value">R 100,000</div>
+      <div class="signal-value milestone-value-text" id="milestone-value">R 100,000</div>
       <div class="signal-subcopy" id="milestone-copy">All-time revenue ladder</div>
     </div>
   </section>
@@ -91,19 +94,19 @@
     </div>
     <div class="stat-card">
       <div class="stat-label">Avg Transaction</div>
-      <div class="stat-value" id="stat-avg-transaction">R 0.00</div>
+      <div class="stat-value stat-avg" id="stat-avg-transaction">R 0.00</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Best Hour</div>
       <div class="stat-value" id="stat-best-hour">--:00</div>
     </div>
-    <div class="stat-card all-time-card">
+    <div class="stat-card">
       <div class="stat-label">All-Time Sales</div>
       <div class="stat-value" id="stat-all-time-revenue">R 0.00</div>
     </div>
-    <div class="stat-card all-time-card">
+    <div class="stat-card">
       <div class="stat-label">All-Time Cups</div>
-      <div class="stat-value" id="stat-all-time-transactions">0</div>
+      <div class="stat-value stat-all-time-cups" id="stat-all-time-transactions">0</div>
     </div>
   </section>
 
@@ -119,7 +122,10 @@
 
     <!-- Recent Transactions -->
     <div class="card recent-transactions-card">
-      <h2 class="card-title">Recent Transactions</h2>
+      <div class="card-title-row">
+        <h2 class="card-title">Recent Transactions</h2>
+        <span class="live-dot"></span>
+      </div>
       <div class="transactions-feed" id="transactions-feed">
         <!-- Rendered by JS -->
       </div>
@@ -127,14 +133,17 @@
 
     <!-- Leaderboard -->
     <div class="card leaderboard-card">
-      <h2 class="card-title">Coffee Leaderboard</h2>
+      <div class="card-title-with-icon">
+        <span class="material-icons">emoji_events</span>
+        <h2 class="card-title">Coffee Leaderboard</h2>
+      </div>
       <div class="leaderboard-feed" id="leaderboard-feed">
         <!-- Rendered by JS -->
       </div>
     </div>
   </section>
 
-  <!-- Fun Stats Footer -->
+  <!-- Fun Stats Footer (hidden in redesign but kept for data binding) -->
   <section class="fun-stats">
     <div class="fun-stat">
       <span class="fun-stat-emoji">☕</span>
@@ -162,7 +171,26 @@
   <!-- Ticker -->
   <div class="ticker">
     <div class="ticker-track">
-      <span class="ticker-content">Express by Stitch — Card-present payments for South African merchants&nbsp;&nbsp;&nbsp;⬥&nbsp;&nbsp;&nbsp;Express by Stitch — Card-present payments for South African merchants&nbsp;&nbsp;&nbsp;⬥&nbsp;&nbsp;&nbsp;Express by Stitch — Card-present payments for South African merchants&nbsp;&nbsp;&nbsp;⬥&nbsp;&nbsp;&nbsp;</span>
+      <div class="ticker-content">
+        <span>Integrated <span class="ticker-highlight">Shopify Point of Sale</span> payments</span>
+        <span class="ticker-dot"></span>
+        <span><span class="ticker-highlight">Stitch Express</span> in person</span>
+        <span class="ticker-dot"></span>
+        <span>Instant order fulfillment</span>
+        <span class="ticker-dot"></span>
+        <span>Earn <span class="ticker-green">loyalty</span> on every transaction</span>
+        <span class="ticker-dot"></span>
+      </div>
+      <div class="ticker-content" aria-hidden="true">
+        <span>Integrated <span class="ticker-highlight">Shopify Point of Sale</span> payments</span>
+        <span class="ticker-dot"></span>
+        <span><span class="ticker-highlight">Stitch Express</span> in person</span>
+        <span class="ticker-dot"></span>
+        <span>Instant order fulfillment</span>
+        <span class="ticker-dot"></span>
+        <span>Earn <span class="ticker-green">loyalty</span> on every transaction</span>
+        <span class="ticker-dot"></span>
+      </div>
     </div>
   </div>
 
