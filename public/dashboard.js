@@ -532,8 +532,32 @@
     }
   }
 
+  // ---- Theme Toggle ----
+  function applyTheme(dark) {
+    document.body.classList.toggle('theme-dark', dark);
+    const icon = document.getElementById('theme-icon');
+    if (icon) icon.textContent = dark ? 'light_mode' : 'dark_mode';
+  }
+
+  function initThemeToggle() {
+    const saved = localStorage.getItem('coffee-dash-theme');
+    if (saved === 'dark') applyTheme(true);
+
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        const nowDark = !document.body.classList.contains('theme-dark');
+        applyTheme(nowDark);
+        localStorage.setItem('coffee-dash-theme', nowDark ? 'dark' : 'light');
+      });
+    }
+  }
+
   // ---- Init ----
   function init() {
+    // Theme toggle
+    initThemeToggle();
+
     // Start clock — ticks every second
     updateClock();
     setInterval(updateClock, 1000);
