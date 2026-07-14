@@ -4,17 +4,18 @@
    ============================================ */
 
 :root {
-  --bg-primary: #100E13;
-  --bg-card: #1D1C1F;
-  --border-card: #2A292C;
-  --text-primary: #FFFFFF;
+  --bg-primary: #F2F2F2;
+  --bg-card: #FFFFFF;
+  --border-card: #E7E7E9;
+  --text-primary: #100E13;
   --text-secondary: #98979C;
-  --text-muted: #CBCBCB;
-  --accent-purple: #6E2CFF;
-  --accent-orange: #FF7A00;
-  --accent-cyan: #00E0FF;
-  --accent-green: #00E979;
-  --accent-red: #FF4567;
+  --text-muted: #57565A;
+  --accent-purple: #40517B;
+  --accent-orange: #E28B44;
+  --accent-cyan: #40517B;
+  --accent-green: #0E9F5E;
+  --accent-red: #E5484D;
+  --track-bg: #EAEAEC;
   --card-radius: 16px;
   --transition-speed: 0.6s;
   --mono-font: 'Roboto Mono', monospace;
@@ -67,7 +68,7 @@ body {
 .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid rgba(110, 44, 255, 0.15);
+  border: 4px solid rgba(64, 81, 123, 0.15);
   border-top-color: var(--accent-purple);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -87,10 +88,10 @@ body {
   z-index: 900;
   width: 520px;
   padding: 18px 26px;
-  border: 1px solid rgba(255, 122, 0, 0.45);
+  border: 1px solid rgba(226, 139, 68, 0.45);
   border-radius: var(--card-radius);
   background: var(--bg-card);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.44), 0 0 42px rgba(255, 122, 0, 0.32);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.10), 0 0 42px rgba(226, 139, 68, 0.18);
   opacity: 0;
   pointer-events: none;
   text-align: center;
@@ -119,7 +120,7 @@ body {
   font-family: var(--mono-font);
   line-height: 1;
   margin-top: 6px;
-  text-shadow: 0 0 28px rgba(255, 122, 0, 0.32);
+  text-shadow: 0 0 28px rgba(226, 139, 68, 0.22);
 }
 
 .sale-moment-meta {
@@ -157,7 +158,7 @@ body {
 
 .logo-icon .material-icons {
   font-size: 30px;
-  color: #FFFFFF;
+  color: #FFFFFF; /* keep white on slate tile */
 }
 
 .header-brand {
@@ -248,7 +249,7 @@ body {
 
 .hero-transactions strong {
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 /* ---- Signal Row ---- */
@@ -265,6 +266,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--card-radius);
+  box-shadow: 0 1px 3px rgba(16,14,19,0.05);
 }
 
 .goal-card {
@@ -297,7 +299,7 @@ body {
 
 .goal-ring-track {
   fill: none;
-  stroke: var(--border-card);
+  stroke: var(--track-bg);
   stroke-width: 7;
 }
 
@@ -326,7 +328,7 @@ body {
   font-family: var(--mono-font);
   font-size: 17px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   line-height: 1;
 }
 
@@ -391,7 +393,7 @@ body {
   margin-top: 12px;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--border-card);
+  background: var(--track-bg);
   position: relative;
 }
 
@@ -420,6 +422,7 @@ body {
   border: 1px solid var(--border-card);
   background: var(--bg-card);
   border-radius: var(--card-radius);
+  box-shadow: 0 1px 3px rgba(16,14,19,0.05);
   padding: 14px 18px;
 }
 
@@ -464,6 +467,7 @@ body {
   border: 1px solid var(--border-card);
   background: var(--bg-card);
   border-radius: var(--card-radius);
+  box-shadow: 0 1px 3px rgba(16,14,19,0.05);
   padding: 18px 22px;
   display: flex;
   flex-direction: column;
@@ -561,7 +565,7 @@ body {
 .hour-bar-track {
   flex: 1;
   height: 13px;
-  background: var(--border-card);
+  background: var(--track-bg);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -610,7 +614,7 @@ body {
   align-items: center;
   gap: 13px;
   padding: 11px 2px;
-  border-bottom: 1px solid var(--border-card);
+  border-bottom: 1px solid #EAEAEC;
 }
 
 .tx-item:first-child {
@@ -642,7 +646,7 @@ body {
 .tx-id {
   font-size: 17px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
   text-transform: capitalize;
   white-space: nowrap;
   overflow: hidden;
@@ -662,7 +666,7 @@ body {
   font-size: 20px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: #fff;
+  color: var(--text-primary);
   flex-shrink: 0;
 }
 
@@ -690,13 +694,13 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-card);
+  background: #FFFFFF;
+  border: 2px solid #E0E0E2;
   font-family: var(--mono-font);
   font-size: 14px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
+  color: #57565A;
 }
 
 .leaderboard-item:first-child .leaderboard-rank {
@@ -720,7 +724,7 @@ body {
 }
 
 .leaderboard-name {
-  color: #fff;
+  color: var(--text-primary);
   font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
@@ -733,7 +737,7 @@ body {
   font-size: 18px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: #fff;
+  color: var(--text-primary);
   flex-shrink: 0;
 }
 
@@ -745,7 +749,7 @@ body {
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--border-card);
+  background: var(--track-bg);
 }
 
 .leaderboard-progress-fill {
