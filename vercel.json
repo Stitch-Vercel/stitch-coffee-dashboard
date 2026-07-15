@@ -34,6 +34,10 @@
     {
       "src": "/style.css",
       "dest": "/public/style.css"
+    },
+    {
+      "src": "/stitch-logo.svg",
+      "dest": "/public/stitch-logo.svg"
     }
   ]
 }
