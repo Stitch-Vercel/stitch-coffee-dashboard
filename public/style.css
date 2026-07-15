@@ -26,6 +26,7 @@
   --sale-border: rgba(226, 139, 68, 0.45);
   --sale-shadow: 0 24px 70px rgba(0,0,0,0.10), 0 0 42px rgba(226,139,68,0.18);
   --sale-text-shadow: 0 0 28px rgba(226,139,68,0.22);
+  --sale-shimmer: rgba(226, 139, 68, 0.16);
   --card-radius: 16px;
   --transition-speed: 0.6s;
   --mono-font: 'Roboto Mono', monospace;
@@ -54,6 +55,7 @@ body.theme-dark {
   --sale-border: rgba(255, 122, 0, 0.45);
   --sale-shadow: 0 24px 70px rgba(0,0,0,0.44), 0 0 42px rgba(255,122,0,0.32);
   --sale-text-shadow: 0 0 28px rgba(255,122,0,0.32);
+  --sale-shimmer: rgba(255, 176, 102, 0.14);
 }
 
 /* ---- Reset & Base ---- */
@@ -115,21 +117,57 @@ body {
   letter-spacing: 0;
 }
 
+/* ---- Local Dev Triggers (injected by JS on localhost only) ---- */
+.dev-tools {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 950;
+  display: flex;
+  gap: 8px;
+}
+
+.dev-sale-trigger {
+  padding: 8px 14px;
+  border: 1px dashed var(--accent-orange);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--accent-orange);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.dev-sale-trigger:hover {
+  opacity: 1;
+}
+
 /* ---- Live Sale Moment ---- */
 .sale-moment {
   position: fixed;
   top: 106px;
   left: 50%;
   z-index: 900;
-  width: 520px;
-  padding: 18px 26px;
+  width: max-content;
+  min-width: 380px;
+  max-width: 640px;
+  padding: 18px 30px 18px 26px;
   border: 1px solid var(--sale-border);
   border-radius: var(--card-radius);
   background: var(--bg-card);
   box-shadow: var(--sale-shadow);
   opacity: 0;
   pointer-events: none;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-align: left;
+  overflow: hidden;
   transform: translate(-50%, -18px) scale(0.96);
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
@@ -137,6 +175,78 @@ body {
 .sale-moment.show {
   opacity: 1;
   transform: translate(-50%, 0) scale(1);
+}
+
+/* One-shot highlight sweep across the card */
+.sale-moment::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 25%, var(--sale-shimmer) 50%, transparent 75%);
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+
+.sale-moment.show::after {
+  animation: saleShimmer 1.3s ease 0.3s;
+}
+
+.sale-moment-art {
+  flex-shrink: 0;
+  display: flex;
+}
+
+.sale-moment-body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Cup illustration — pour stream draws in, coffee rises, steam follows */
+.sale-cup-body,
+.sale-cup-handle {
+  fill: none;
+  stroke: var(--text-primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sale-cup-pour {
+  fill: none;
+  stroke: var(--accent-orange);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+}
+
+.sale-moment.show .sale-cup-pour {
+  animation: salePour 1.5s ease-in-out 0.1s both;
+}
+
+.sale-cup-coffee {
+  fill: var(--accent-orange);
+  transform: translateY(21px);
+}
+
+.sale-moment.show .sale-cup-coffee {
+  animation: saleFill 1.4s ease-out 0.35s both;
+}
+
+.sale-cup-steam {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+.sale-moment.show .steam-1 {
+  animation: saleSteam 1.7s ease-out 1.5s infinite;
+}
+
+.sale-moment.show .steam-2 {
+  animation: saleSteam 1.7s ease-out 1.85s infinite;
 }
 
 .sale-moment-kicker {
@@ -156,6 +266,7 @@ body {
   line-height: 1;
   margin-top: 6px;
   text-shadow: var(--sale-text-shadow);
+  white-space: nowrap;
 }
 
 .sale-moment-meta {
@@ -163,6 +274,9 @@ body {
   font-size: 0.85rem;
   margin-top: 8px;
   text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ---- Header ---- */
@@ -180,15 +294,47 @@ body {
   gap: 16px;
 }
 
+/* Doubles as the dark/light mode toggle */
 .logo-icon {
+  position: relative;
+  overflow: hidden;
   width: 56px;
   height: 56px;
+  padding: 0;
+  border: none;
   border-radius: 16px;
   background: var(--accent-purple);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+/* Steam wisps rising off the cup */
+.logo-icon .steam i {
+  position: absolute;
+  bottom: 33px;
+  width: 3px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  filter: blur(1px);
+  opacity: 0;
+  animation: steamRise 2.8s ease-in-out infinite;
+}
+
+.logo-icon .steam i:nth-child(1) { left: 22px; animation-delay: 0s; }
+.logo-icon .steam i:nth-child(2) { left: 27px; animation-delay: 0.9s; }
+.logo-icon .steam i:nth-child(3) { left: 32px; animation-delay: 1.8s; }
+
+.logo-icon:hover {
+  filter: brightness(1.12);
+}
+
+.logo-icon:active {
+  transform: scale(0.94);
 }
 
 .logo-icon .material-icons {
@@ -228,34 +374,6 @@ body {
   gap: 2px;
 }
 
-/* ---- Theme Toggle ---- */
-.theme-toggle {
-  position: absolute;
-  top: 14px;
-  right: 180px;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border-card);
-  border-radius: 10px;
-  background: var(--bg-card);
-  box-shadow: var(--card-shadow);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s ease, border-color 0.3s ease;
-}
-
-.theme-toggle:hover {
-  border-color: var(--accent-purple);
-}
-
-.theme-icon {
-  font-size: 20px;
-  color: var(--text-muted);
-  transition: color 0.3s ease;
-}
-
 .clock {
   font-family: var(--mono-font);
   font-size: 40px;
@@ -292,6 +410,38 @@ body {
 
 .hero-revenue.pop {
   animation: popA 0.6s ease;
+}
+
+/* Odometer digits — each digit is a masked column of 0-9 that rolls */
+.odometer {
+  display: inline-flex;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.odo-static {
+  display: block;
+  height: 1em;
+  line-height: 1;
+}
+
+.odo-digit {
+  display: block;
+  height: 1em;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.odo-col {
+  display: block;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.odo-col span {
+  display: block;
+  height: 1em;
+  line-height: 1;
 }
 
 .hero-label {
@@ -634,6 +784,8 @@ body {
 }
 
 .hour-bar {
+  position: relative;
+  overflow: hidden;
   height: 100%;
   background: var(--accent-purple);
   border-radius: 999px;
@@ -643,6 +795,15 @@ body {
 
 .hour-bar.current-hour {
   background: var(--accent-orange);
+}
+
+.hour-bar.current-hour::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 25%, rgba(255, 255, 255, 0.55) 50%, transparent 75%);
+  transform: translateX(-100%);
+  animation: shimmer 7s ease-in-out infinite;
 }
 
 .hour-count {
@@ -670,6 +831,8 @@ body {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
 }
 
 .tx-item {
@@ -907,20 +1070,21 @@ body {
   100% { transform: scale(1); }
 }
 
-@keyframes popB {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.03); }
-  100% { transform: scale(1); }
-}
-
 @keyframes rowInA {
   from { opacity: 0; transform: translateY(-14px); }
   to { opacity: 1; transform: none; }
 }
 
-@keyframes rowInB {
-  from { opacity: 0; transform: translateY(-14px); }
-  to { opacity: 1; transform: none; }
+@keyframes steamRise {
+  0% { opacity: 0; transform: translateY(4px) scaleY(0.7); }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-9px) scaleY(1.2); }
+}
+
+/* Sweep for ~30% of the cycle, then rest off-screen */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  30%, 100% { transform: translateX(100%); }
 }
 
 @keyframes marquee {
@@ -930,6 +1094,28 @@ body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes saleShimmer {
+  to { transform: translateX(100%); }
+}
+
+@keyframes salePour {
+  0% { stroke-dashoffset: 1; }
+  35% { stroke-dashoffset: 0; }
+  70% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -1; }
+}
+
+@keyframes saleFill {
+  from { transform: translateY(21px); }
+  to { transform: translateY(4px); }
+}
+
+@keyframes saleSteam {
+  0% { opacity: 0; transform: translateY(4px); }
+  35% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-5px); }
 }
 
 @keyframes fadeInUp {

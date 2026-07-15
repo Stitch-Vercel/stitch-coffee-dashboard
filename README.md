@@ -14,9 +14,9 @@ A lightweight internal dashboard showing live terminal payment stats for a coffe
 # Install dependencies
 pnpm install
 
-# Set up environment
-export EXPRESS_INTERNAL_API_URL="https://express.stitch.money/api/internal/stitch-coffee-dashboard/stats"
-export EXPRESS_INTERNAL_API_TOKEN="..."
+# Set up environment (.env is gitignored)
+cp .env.example .env
+# then fill in EXPRESS_INTERNAL_API_TOKEN in .env
 
 # Run dev server
 pnpm dev
