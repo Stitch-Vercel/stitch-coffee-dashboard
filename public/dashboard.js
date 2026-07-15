@@ -11,7 +11,8 @@
   const BUSINESS_START_HOUR = 6;
   const BUSINESS_END_HOUR = 21;
   const COFFEE_PRICE_CENTS = 200;
-  const ALL_TIME_MILESTONES_CENTS = [5_000_000, 10_000_000, 25_000_000, 50_000_000, 100_000_000];
+  const ALL_TIME_MILESTONES_CENTS = [500_000, 1_000_000, 2_000_000];
+  const MILESTONE_STEP_CENTS = 1_000_000; // after the early ladder, a milestone every R10k
   const GOAL_RING_RADIUS = 29;
   const GOAL_RING_CIRCUMFERENCE = 2 * Math.PI * GOAL_RING_RADIUS;
 
@@ -393,8 +394,7 @@
 
     if (nextMilestone) return nextMilestone;
 
-    const nextMillion = Math.ceil((totalRevenueCents + 1) / 100_000_000) * 100_000_000;
-    return Math.max(nextMillion, 100_000_000);
+    return Math.ceil((totalRevenueCents + 1) / MILESTONE_STEP_CENTS) * MILESTONE_STEP_CENTS;
   }
 
   function updateAllTimeMilestone(allTimeRevenueCents) {
@@ -451,9 +451,8 @@
     els.saleMomentAmount.textContent = formatZAR(tx.amount_cents);
     els.saleMomentMeta.textContent = `${getBuyerDisplayName(tx)} paid on Express`;
     els.saleMoment.classList.remove('show');
-    window.requestAnimationFrame(() => {
-      els.saleMoment.classList.add('show');
-    });
+    void els.saleMoment.offsetWidth; // force reflow so animations restart on back-to-back sales
+    els.saleMoment.classList.add('show');
 
     window.clearTimeout(saleMomentTimer);
     saleMomentTimer = window.setTimeout(() => {
