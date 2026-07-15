@@ -309,18 +309,18 @@ body {
   justify-content: center;
   flex-shrink: 0;
   cursor: pointer;
-  transition: transform 0.15s ease, filter 0.2s ease;
+  transition: transform 0.15s ease, opacity 0.2s ease;
 }
 
-/* Steam wisps rising off the cup */
+/* Steam wisps rising off the cup — soft edges come from a gradient
+   instead of filter: blur(), which is too expensive on TV compositors. */
 .logo-icon .steam i {
   position: absolute;
   bottom: 33px;
   width: 3px;
   height: 9px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.8);
-  filter: blur(1px);
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
   opacity: 0;
   animation: steamRise 2.8s ease-in-out infinite;
 }
@@ -330,7 +330,7 @@ body {
 .logo-icon .steam i:nth-child(3) { left: 32px; animation-delay: 1.8s; }
 
 .logo-icon:hover {
-  filter: brightness(1.12);
+  opacity: 0.86;
 }
 
 .logo-icon:active {
@@ -432,10 +432,12 @@ body {
   overflow: hidden;
 }
 
+/* No will-change here: promoting every digit column to its own compositor
+   layer makes the theme flip re-rasterize them all at once, which crashes
+   low-memory TV browsers. */
 .odo-col {
   display: block;
   transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
 }
 
 .odo-col span {
