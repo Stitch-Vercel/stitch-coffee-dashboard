@@ -19,7 +19,7 @@
   let lastSeenTransactionKey = null;
   let saleMomentTimer = null;
   let refreshTimer = null;
-  let heroPopSeq = 0;
+  let prevAllTimeRevenueCents = null;
 
   // ---- DOM refs ----
   const $ = (id) => document.getElementById(id);
@@ -178,45 +178,68 @@
     requestAnimationFrame(tick);
   }
 
-  // ---- Hero Revenue with pop animation ----
-  function animateHeroRevenue(element, targetValue, formatter, duration = 1200) {
-    const safeTargetValue = Number.isFinite(Number(targetValue)) ? Number(targetValue) : 0;
-    const startValue = parseFloat(element.dataset.currentValue || '0');
+  // ---- Hero Revenue odometer ----
+  const ODO_DIGIT_COLUMN = Array.from({ length: 10 }, (_, d) => `<span>${d}</span>`).join('');
+
+  function updateHeroOdometer(targetCents) {
+    const element = els.heroRevenue;
+    const safeTargetValue = Number.isFinite(Number(targetCents)) ? Number(targetCents) : 0;
+    const previousValue = element.dataset.currentValue;
     element.dataset.currentValue = String(safeTargetValue);
 
-    if (startValue !== safeTargetValue) {
-      // Trigger pop animation
-      heroPopSeq++;
+    const formatted = formatZAR(safeTargetValue);
+    // Non-digit layout (currency symbol, separators) — rebuild only when it changes
+    const skeleton = formatted.replace(/\d/g, '#');
+
+    if (element.dataset.odoSkeleton !== skeleton) {
+      element.dataset.odoSkeleton = skeleton;
+      element.innerHTML = `<span class="odometer">${[...formatted]
+        .map((ch) =>
+          /\d/.test(ch)
+            ? `<span class="odo-digit"><span class="odo-col">${ODO_DIGIT_COLUMN}</span></span>`
+            : `<span class="odo-static">${ch === ' ' ? '&nbsp;' : ch}</span>`
+        )
+        .join('')}</span>`;
+    }
+
+    const digits = formatted.match(/\d/g) || [];
+    const columns = element.querySelectorAll('.odo-col');
+    // Defer so freshly built columns transition from 0 instead of snapping
+    window.requestAnimationFrame(() => {
+      columns.forEach((col, i) => {
+        col.style.transform = `translateY(-${digits[i]}em)`;
+      });
+    });
+
+    if (previousValue !== undefined && previousValue !== String(safeTargetValue)) {
       element.style.animation = 'none';
-      element.offsetHeight; // force reflow
-      element.style.animation = heroPopSeq % 2 === 0 ? 'popA 0.6s ease' : 'popB 0.6s ease';
+      element.offsetHeight; // force reflow to restart the pop
+      element.style.animation = 'popA 0.6s ease';
     }
+  }
 
-    if (startValue === safeTargetValue) {
-      element.textContent = formatter(safeTargetValue);
-      return;
+  // ---- Milestone Celebration ----
+  function celebrateMilestone() {
+    if (typeof confetti !== 'function') return;
+
+    const colors = ['#E28B44', '#6E2CFF', '#0E9F5E', '#6F4E37', '#FFF3E6'];
+
+    confetti({ particleCount: 160, spread: 100, startVelocity: 45, scalar: 1.1, origin: { y: 0.55 }, colors });
+
+    const end = Date.now() + 2200;
+    (function sideBursts() {
+      confetti({ particleCount: 5, angle: 60, spread: 60, startVelocity: 55, origin: { x: 0, y: 0.9 }, colors });
+      confetti({ particleCount: 5, angle: 120, spread: 60, startVelocity: 55, origin: { x: 1, y: 0.9 }, colors });
+      if (Date.now() < end) requestAnimationFrame(sideBursts);
+    })();
+  }
+
+  function maybeCelebrateMilestone(allTimeRevenueCents) {
+    if (prevAllTimeRevenueCents !== null && allTimeRevenueCents > prevAllTimeRevenueCents) {
+      const target = getAllTimeMilestone(prevAllTimeRevenueCents);
+      if (allTimeRevenueCents >= target) celebrateMilestone();
     }
-
-    const startTime = performance.now();
-
-    function easeOut(t) {
-      return 1 - Math.pow(1 - t, 3);
-    }
-
-    function tick(currentTime) {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeOut(progress);
-      const currentVal = startValue + (safeTargetValue - startValue) * easedProgress;
-
-      element.textContent = formatter(currentVal);
-
-      if (progress < 1) {
-        requestAnimationFrame(tick);
-      }
-    }
-
-    requestAnimationFrame(tick);
+    prevAllTimeRevenueCents = allTimeRevenueCents;
   }
 
   // ---- Hourly Chart ----
@@ -424,6 +447,20 @@
     els.milestoneCopy.textContent = `${formatCompactZAR(remaining)} lifetime sales to go`;
   }
 
+  function showSaleMoment(tx) {
+    els.saleMomentAmount.textContent = formatZAR(tx.amount_cents);
+    els.saleMomentMeta.textContent = `${getBuyerDisplayName(tx)} paid on Express`;
+    els.saleMoment.classList.remove('show');
+    window.requestAnimationFrame(() => {
+      els.saleMoment.classList.add('show');
+    });
+
+    window.clearTimeout(saleMomentTimer);
+    saleMomentTimer = window.setTimeout(() => {
+      els.saleMoment.classList.remove('show');
+    }, 4200);
+  }
+
   function maybeShowSaleMoment(data) {
     const newestTx = data.recent_transactions?.[0];
     const newestKey = getTransactionKey(newestTx);
@@ -441,17 +478,7 @@
 
     if (newestTx.status !== 'SUCCESS') return;
 
-    els.saleMomentAmount.textContent = formatZAR(newestTx.amount_cents);
-    els.saleMomentMeta.textContent = `${getBuyerDisplayName(newestTx)} paid on Express`;
-    els.saleMoment.classList.remove('show');
-    window.requestAnimationFrame(() => {
-      els.saleMoment.classList.add('show');
-    });
-
-    window.clearTimeout(saleMomentTimer);
-    saleMomentTimer = window.setTimeout(() => {
-      els.saleMoment.classList.remove('show');
-    }, 4200);
+    showSaleMoment(newestTx);
   }
 
   // ---- Update Dashboard ----
@@ -465,7 +492,7 @@
     );
 
     // Hero
-    animateHeroRevenue(els.heroRevenue, today.revenue_cents, formatZAR, 1200);
+    updateHeroOdometer(today.revenue_cents);
     els.heroTransactions.innerHTML = `<strong>${(today.transactions || 0).toLocaleString()}</strong> transactions`;
 
     // Stats
@@ -487,6 +514,7 @@
     updateAllTimeMilestone(allTime.total_revenue_cents ?? 0);
     updatePace(today.revenue_cents ?? 0);
     updateMilestone(allTime.total_revenue_cents ?? 0);
+    maybeCelebrateMilestone(allTime.total_revenue_cents ?? 0);
 
     // Hourly chart
     renderHourlyChart(hourlyActivity);
@@ -532,11 +560,9 @@
     }
   }
 
-  // ---- Theme Toggle ----
+  // ---- Theme Toggle (top-left coffee logo) ----
   function applyTheme(dark) {
     document.body.classList.toggle('theme-dark', dark);
-    const icon = document.getElementById('theme-icon');
-    if (icon) icon.textContent = dark ? 'light_mode' : 'dark_mode';
   }
 
   function initThemeToggle() {
@@ -553,10 +579,42 @@
     }
   }
 
+  // ---- Local Dev Tools ----
+  // Only rendered when the page is served from localhost, never in production.
+  function initDevTools() {
+    if (!['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)) return;
+
+    const container = document.createElement('div');
+    container.className = 'dev-tools';
+
+    const saleBtn = document.createElement('button');
+    saleBtn.className = 'dev-sale-trigger';
+    saleBtn.textContent = 'Trigger sale';
+    saleBtn.title = 'Local dev only: preview the New Coffee Sale animation';
+    saleBtn.addEventListener('click', () => {
+      showSaleMoment({
+        amount_cents: 200,
+        buyer_display_name: 'Test Patron',
+      });
+    });
+
+    const celebrateBtn = document.createElement('button');
+    celebrateBtn.className = 'dev-sale-trigger';
+    celebrateBtn.textContent = 'Trigger celebration';
+    celebrateBtn.title = 'Local dev only: preview the milestone celebration';
+    celebrateBtn.addEventListener('click', celebrateMilestone);
+
+    container.append(saleBtn, celebrateBtn);
+    document.body.appendChild(container);
+  }
+
   // ---- Init ----
   function init() {
     // Theme toggle
     initThemeToggle();
+
+    // Local-only dev tools
+    initDevTools();
 
     // Start clock — ticks every second
     updateClock();

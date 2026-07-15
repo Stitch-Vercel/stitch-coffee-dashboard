@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch --env-file=.env src/server.ts",
     "build": "tsup src/server.ts --format esm --out-dir dist && cp -R public/. dist/",
     "start": "node dist/server.js",
     "postinstall": "prisma generate",

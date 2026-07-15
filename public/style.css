@@ -115,6 +115,36 @@ body {
   letter-spacing: 0;
 }
 
+/* ---- Local Dev Triggers (injected by JS on localhost only) ---- */
+.dev-tools {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 950;
+  display: flex;
+  gap: 8px;
+}
+
+.dev-sale-trigger {
+  padding: 8px 14px;
+  border: 1px dashed var(--accent-orange);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--accent-orange);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.dev-sale-trigger:hover {
+  opacity: 1;
+}
+
 /* ---- Live Sale Moment ---- */
 .sale-moment {
   position: fixed;
@@ -180,15 +210,47 @@ body {
   gap: 16px;
 }
 
+/* Doubles as the dark/light mode toggle */
 .logo-icon {
+  position: relative;
+  overflow: hidden;
   width: 56px;
   height: 56px;
+  padding: 0;
+  border: none;
   border-radius: 16px;
   background: var(--accent-purple);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+/* Steam wisps rising off the cup */
+.logo-icon .steam i {
+  position: absolute;
+  bottom: 33px;
+  width: 3px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  filter: blur(1px);
+  opacity: 0;
+  animation: steamRise 2.8s ease-in-out infinite;
+}
+
+.logo-icon .steam i:nth-child(1) { left: 22px; animation-delay: 0s; }
+.logo-icon .steam i:nth-child(2) { left: 27px; animation-delay: 0.9s; }
+.logo-icon .steam i:nth-child(3) { left: 32px; animation-delay: 1.8s; }
+
+.logo-icon:hover {
+  filter: brightness(1.12);
+}
+
+.logo-icon:active {
+  transform: scale(0.94);
 }
 
 .logo-icon .material-icons {
@@ -228,34 +290,6 @@ body {
   gap: 2px;
 }
 
-/* ---- Theme Toggle ---- */
-.theme-toggle {
-  position: absolute;
-  top: 14px;
-  right: 180px;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border-card);
-  border-radius: 10px;
-  background: var(--bg-card);
-  box-shadow: var(--card-shadow);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s ease, border-color 0.3s ease;
-}
-
-.theme-toggle:hover {
-  border-color: var(--accent-purple);
-}
-
-.theme-icon {
-  font-size: 20px;
-  color: var(--text-muted);
-  transition: color 0.3s ease;
-}
-
 .clock {
   font-family: var(--mono-font);
   font-size: 40px;
@@ -292,6 +326,38 @@ body {
 
 .hero-revenue.pop {
   animation: popA 0.6s ease;
+}
+
+/* Odometer digits — each digit is a masked column of 0-9 that rolls */
+.odometer {
+  display: inline-flex;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.odo-static {
+  display: block;
+  height: 1em;
+  line-height: 1;
+}
+
+.odo-digit {
+  display: block;
+  height: 1em;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.odo-col {
+  display: block;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.odo-col span {
+  display: block;
+  height: 1em;
+  line-height: 1;
 }
 
 .hero-label {
@@ -634,6 +700,8 @@ body {
 }
 
 .hour-bar {
+  position: relative;
+  overflow: hidden;
   height: 100%;
   background: var(--accent-purple);
   border-radius: 999px;
@@ -643,6 +711,15 @@ body {
 
 .hour-bar.current-hour {
   background: var(--accent-orange);
+}
+
+.hour-bar.current-hour::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 25%, rgba(255, 255, 255, 0.55) 50%, transparent 75%);
+  transform: translateX(-100%);
+  animation: shimmer 7s ease-in-out infinite;
 }
 
 .hour-count {
@@ -670,6 +747,8 @@ body {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
 }
 
 .tx-item {
@@ -907,20 +986,21 @@ body {
   100% { transform: scale(1); }
 }
 
-@keyframes popB {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.03); }
-  100% { transform: scale(1); }
-}
-
 @keyframes rowInA {
   from { opacity: 0; transform: translateY(-14px); }
   to { opacity: 1; transform: none; }
 }
 
-@keyframes rowInB {
-  from { opacity: 0; transform: translateY(-14px); }
-  to { opacity: 1; transform: none; }
+@keyframes steamRise {
+  0% { opacity: 0; transform: translateY(4px) scaleY(0.7); }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-9px) scaleY(1.2); }
+}
+
+/* Sweep for ~30% of the cycle, then rest off-screen */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  30%, 100% { transform: translateX(100%); }
 }
 
 @keyframes marquee {
