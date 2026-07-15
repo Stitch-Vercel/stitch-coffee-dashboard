@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1920">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Miguel's Coffee Bar — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,20 +26,23 @@
   <!-- Header -->
   <header class="header">
     <div class="header-left">
-      <div class="logo-icon">
-        <span class="material-icons">local_cafe</span>
+      <div class="stitch-mark">
+        <img src="stitch-logo.svg" alt="Stitch">
       </div>
       <div class="header-brand">
+        <span class="header-eyebrow">Stitch Express live dashboard</span>
         <h1 class="header-title">Miguel's Coffee Bar</h1>
-        <span class="header-subtitle">Powered by <strong>Express</strong></span>
+        <span class="header-subtitle">Shopify POS payments · in-person coffee sales</span>
       </div>
     </div>
     <div class="header-right">
-      <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">
+      <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle dark/light mode">
         <span class="material-icons theme-icon" id="theme-icon">dark_mode</span>
       </button>
-      <div class="clock" id="clock">--:--:--</div>
-      <div class="clock-label">SAST</div>
+      <div class="clock-block">
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="clock-label">SAST</div>
+      </div>
     </div>
   </header>
 
