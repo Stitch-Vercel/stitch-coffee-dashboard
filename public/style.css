@@ -3,25 +3,25 @@
    Restyled to match updated design spec
    ============================================ */
 
-/* ---- Light mode (default) ---- */
+/* ---- Light mode (default) — latte (barely-warm off-white) ---- */
 :root {
-  --bg-primary: #F2F2F2;
-  --bg-card: #FFFFFF;
-  --border-card: #E7E7E9;
-  --text-primary: #100E13;
-  --text-secondary: #98979C;
-  --text-muted: #57565A;
+  --bg-primary: #F5F2EC;
+  --bg-card: #FEFDFB;
+  --border-card: #E7E2D9;
+  --text-primary: #211E19;
+  --text-secondary: #948C7F;
+  --text-muted: #6B655C;
   --accent-purple: #40517B;
   --accent-orange: #E28B44;
   --accent-cyan: #40517B;
   --accent-green: #0E9F5E;
   --accent-red: #E5484D;
-  --track-bg: #EAEAEC;
+  --track-bg: #ECE7DE;
   --card-shadow: 0 1px 3px rgba(16,14,19,0.05);
-  --rank-bg: #FFFFFF;
-  --rank-border: #E0E0E2;
-  --rank-color: #57565A;
-  --separator: #EAEAEC;
+  --rank-bg: #FEFDFB;
+  --rank-border: #E7E2D9;
+  --rank-color: #6B655C;
+  --separator: #ECE7DE;
   --spinner-track: rgba(64, 81, 123, 0.15);
   --sale-border: rgba(226, 139, 68, 0.45);
   --sale-shadow: 0 24px 70px rgba(0,0,0,0.10), 0 0 42px rgba(226,139,68,0.18);
@@ -32,30 +32,30 @@
   --mono-font: 'Roboto Mono', monospace;
 }
 
-/* ---- Dark mode ---- */
+/* ---- Dark mode — espresso (faint warm cast) ---- */
 body.theme-dark {
-  --bg-primary: #100E13;
-  --bg-card: #1D1C1F;
-  --border-card: #2A292C;
-  --text-primary: #FFFFFF;
-  --text-secondary: #98979C;
-  --text-muted: #CBCBCB;
-  --accent-purple: #6E2CFF;
-  --accent-orange: #FF7A00;
-  --accent-cyan: #00E0FF;
+  --bg-primary: #161412;
+  --bg-card: #201D19;
+  --border-card: #2E2A25;
+  --text-primary: #F3F1ED;
+  --text-secondary: #8A847B;
+  --text-muted: #AEA99F;
+  --accent-purple: #40517B;
+  --accent-orange: #E28B44;
+  --accent-cyan: #8B97C0;
   --accent-green: #00E979;
   --accent-red: #FF4567;
-  --track-bg: #2A292C;
+  --track-bg: #2E2A25;
   --card-shadow: none;
-  --rank-bg: #100E13;
-  --rank-border: #2A292C;
-  --rank-color: #CBCBCB;
-  --separator: #2A292C;
-  --spinner-track: rgba(110, 44, 255, 0.15);
-  --sale-border: rgba(255, 122, 0, 0.45);
-  --sale-shadow: 0 24px 70px rgba(0,0,0,0.44), 0 0 42px rgba(255,122,0,0.32);
-  --sale-text-shadow: 0 0 28px rgba(255,122,0,0.32);
-  --sale-shimmer: rgba(255, 176, 102, 0.14);
+  --rank-bg: #161412;
+  --rank-border: #2E2A25;
+  --rank-color: #AEA99F;
+  --separator: #2E2A25;
+  --spinner-track: rgba(64, 81, 123, 0.15);
+  --sale-border: rgba(226, 139, 68, 0.45);
+  --sale-shadow: 0 24px 70px rgba(0,0,0,0.44), 0 0 42px rgba(226,139,68,0.32);
+  --sale-text-shadow: 0 0 28px rgba(226,139,68,0.32);
+  --sale-shimmer: rgba(226, 139, 68, 0.14);
 }
 
 /* ---- Reset & Base ---- */
