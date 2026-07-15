@@ -224,9 +224,12 @@ body {
   animation: salePour 1.5s ease-in-out 0.1s both;
 }
 
+/* Rises via scaleY about the cup bottom (y=49), emulated with
+   translate-scale-translate since transform-box isn't supported on
+   the old Chromium forks TV browsers run */
 .sale-cup-coffee {
   fill: var(--accent-orange);
-  transform: translateY(21px);
+  transform: translate(0, 49px) scaleY(0.02) translate(0, -49px);
 }
 
 .sale-moment.show .sale-cup-coffee {
@@ -1110,8 +1113,8 @@ body {
 }
 
 @keyframes saleFill {
-  from { transform: translateY(21px); }
-  to { transform: translateY(4px); }
+  from { transform: translate(0, 49px) scaleY(0.02) translate(0, -49px); }
+  to { transform: translate(0, 49px) scaleY(0.8) translate(0, -49px); }
 }
 
 @keyframes saleSteam {

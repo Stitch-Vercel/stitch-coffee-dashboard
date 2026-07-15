@@ -20,15 +20,10 @@
   <div id="sale-moment" class="sale-moment" aria-live="polite">
     <div class="sale-moment-art" aria-hidden="true">
       <svg class="sale-cup" viewBox="0 0 64 64" width="72" height="72">
-        <defs>
-          <clipPath id="sale-cup-clip">
-            <path d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
-          </clipPath>
-        </defs>
         <path class="sale-cup-pour" d="M28 3 V 31" pathLength="1"></path>
-        <g clip-path="url(#sale-cup-clip)">
-          <rect class="sale-cup-coffee" x="15" y="29" width="26" height="20"></rect>
-        </g>
+        <!-- Coffee is the cup-interior shape scaled up from the bottom; no
+             clipPath, since old TV browsers drop clips on animated children -->
+        <path class="sale-cup-coffee" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
         <path class="sale-cup-body" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
         <path class="sale-cup-handle" d="M41 32 h3.5 a5.5 5.5 0 0 1 0 11 H41"></path>
         <path class="sale-cup-steam steam-1" d="M23 23 q 3.5 -4 0 -8 q -3.5 -4 0 -7"></path>
