@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  const REFRESH_INTERVAL = 30_000; // 30 seconds
+  const REFRESH_INTERVAL = 7_000; // 7 seconds
   const SAST_OFFSET = 2; // UTC+2
   const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 06–21
   const BUSINESS_START_HOUR = 6;
@@ -622,7 +622,7 @@
     // Initial fetch
     fetchStats();
 
-    // Auto-refresh every 30s
+    // Auto-refresh every 7s
     refreshTimer = setInterval(fetchStats, REFRESH_INTERVAL);
   }
 
