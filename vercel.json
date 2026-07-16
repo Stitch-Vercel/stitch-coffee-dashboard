@@ -6,8 +6,9 @@
       "use": "@vercel/node"
     },
     {
-      "src": "public/**",
-      "use": "@vercel/static"
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "public" }
     }
   ],
   "routes": [
@@ -25,19 +26,23 @@
     },
     {
       "src": "/",
-      "dest": "/public/index.html"
+      "dest": "/index.html"
     },
     {
       "src": "/dashboard.js",
-      "dest": "/public/dashboard.js"
+      "dest": "/dashboard.js"
     },
     {
       "src": "/style.css",
-      "dest": "/public/style.css"
+      "dest": "/style.css"
+    },
+    {
+      "src": "/version.json",
+      "dest": "/version.json"
     },
     {
       "src": "/vendor/(.*)",
-      "dest": "/public/vendor/$1"
+      "dest": "/vendor/$1"
     }
   ]
 }
