@@ -370,6 +370,16 @@ body {
   font-weight: 700;
 }
 
+.header-version {
+  margin-left: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  opacity: 0.55;
+  font-family: var(--mono-font);
+  letter-spacing: 0.02em;
+}
+
 .header-right {
   display: flex;
   flex-direction: column;
@@ -848,7 +858,7 @@ body {
   border-bottom: 1px solid var(--separator);
 }
 
-.tx-item:first-child {
+.tx-item.tx-new {
   animation: rowInA 0.55s ease both;
 }
 

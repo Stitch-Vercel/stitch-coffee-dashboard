@@ -9,6 +9,7 @@ prisma/generated/
 
 # Build
 *.tsbuildinfo
+public/version.json
 
 # IDE
 .vscode/

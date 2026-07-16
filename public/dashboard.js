@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  const REFRESH_INTERVAL = 7_000; // 7 seconds
+  const REFRESH_INTERVAL = 5_000; // 5 seconds
   const SAST_OFFSET = 2; // UTC+2
   const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 06–21
   const BUSINESS_START_HOUR = 6;
@@ -18,6 +18,7 @@
 
   let lastKnownData = null;
   let lastSeenTransactionKey = null;
+  let lastRenderedTransactionKey = null;
   let saleMomentTimer = null;
   let refreshTimer = null;
   let prevAllTimeRevenueCents = null;
@@ -53,6 +54,7 @@
     saleMomentAmount: $('sale-moment-amount'),
     saleMomentMeta: $('sale-moment-meta'),
     loadingOverlay: $('loading-overlay'),
+    headerVersion: $('header-version'),
   };
 
   // ---- Formatting ----
@@ -307,15 +309,22 @@
     }
 
     const items = transactions.slice(0, 10);
+    const newestKey = getTransactionKey(items[0]);
+    // The feed is rebuilt every poll (to refresh relative times), so only
+    // animate the top row when the newest transaction actually changed.
+    const hasNewTransaction =
+      lastRenderedTransactionKey !== null && newestKey !== lastRenderedTransactionKey;
+    lastRenderedTransactionKey = newestKey;
+
     els.transactionsFeed.innerHTML = items
-      .map((tx) => {
+      .map((tx, index) => {
         const status = String(tx.status || '').toLowerCase();
         const statusClass = status === 'failure' ? 'failed' : status;
         const place = getTransactionPlace(tx);
         const buyerName = getBuyerDisplayName(tx);
 
         return `
-        <div class="tx-item">
+        <div class="tx-item${index === 0 && hasNewTransaction ? ' tx-new' : ''}">
           <span class="tx-status-dot ${statusClass}"></span>
           <div class="tx-details">
             <div class="tx-id">${escapeHtml(buyerName)}</div>
@@ -444,7 +453,7 @@
     const nextMilestone = getAllTimeMilestone(allTimeRevenueCents);
     const remaining = nextMilestone - allTimeRevenueCents;
     els.milestoneValue.textContent = formatCompactZAR(nextMilestone);
-    els.milestoneCopy.textContent = `${formatCompactZAR(remaining)} lifetime sales to go`;
+    els.milestoneCopy.textContent = `${formatCompactZAR(remaining)} in sales to go`;
   }
 
   function showSaleMoment(tx) {
@@ -552,6 +561,22 @@
     }
   }
 
+  // ---- Deploy Version ----
+  // version.json is generated at build time; absent in local dev, so stay blank on failure.
+  async function fetchVersion() {
+    try {
+      const resp = await fetch('/version.json');
+      if (!resp.ok) return;
+      const data = await resp.json();
+      if (data.version) {
+        els.headerVersion.textContent = data.version;
+        els.headerVersion.title = data.sha ? `Deployed ${data.deployed_at} (${data.sha})` : `Deployed ${data.deployed_at}`;
+      }
+    } catch {
+      // Leave the version hidden
+    }
+  }
+
   // ---- Loading Overlay ----
   function hideLoading() {
     if (els.loadingOverlay && !els.loadingOverlay.classList.contains('hidden')) {
@@ -614,6 +639,9 @@
 
     // Local-only dev tools
     initDevTools();
+
+    // Deploy version stamp (one-time)
+    fetchVersion();
 
     // Start clock — ticks every second
     updateClock();
