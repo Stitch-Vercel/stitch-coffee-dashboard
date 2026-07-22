@@ -409,7 +409,7 @@
   function updateAllTimeMilestone(allTimeRevenueCents) {
     const nextMilestone = getAllTimeMilestone(allTimeRevenueCents);
     const progress = Math.min(allTimeRevenueCents / nextMilestone, 1);
-    const percent = Math.round(progress * 100);
+    const percent = Math.floor(progress * 100);
 
     // Update SVG ring
     const dashLength = (percent / 100) * GOAL_RING_CIRCUMFERENCE;
