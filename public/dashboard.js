@@ -11,8 +11,8 @@
   const BUSINESS_START_HOUR = 6;
   const BUSINESS_END_HOUR = 21;
   const COFFEE_PRICE_CENTS = 200;
-  const ALL_TIME_MILESTONES_CENTS = [500_000, 1_000_000, 2_000_000];
-  const MILESTONE_STEP_CENTS = 1_000_000; // after the early ladder, a milestone every R10k
+  const ALL_TIME_MILESTONES_CENTS = [500_000, 1_000_000];
+  const MILESTONE_STEP_CENTS = 500_000; // after the early ladder, a milestone every R5k
   const GOAL_RING_RADIUS = 29;
   const GOAL_RING_CIRCUMFERENCE = 2 * Math.PI * GOAL_RING_RADIUS;
 
