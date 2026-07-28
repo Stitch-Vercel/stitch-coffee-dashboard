@@ -350,19 +350,26 @@
       return;
     }
 
-    const leaderboardWithCups = visibleLeaderboard.map((entry) => ({
+    const leaderboardWithTransactions = visibleLeaderboard.map((entry) => ({
       ...entry,
-      coffee_count: getCoffeeCount(entry.revenue_cents),
+      transaction_count: Number.isFinite(Number(entry.transactions))
+        ? Number(entry.transactions)
+        : 0,
     }));
-    const maxCoffeeCount = Math.max(
-      ...leaderboardWithCups.map((entry) => entry.coffee_count),
+    const maxTransactionCount = Math.max(
+      ...leaderboardWithTransactions.map((entry) => entry.transaction_count),
       1
     );
 
-    els.leaderboardFeed.innerHTML = leaderboardWithCups
+    els.leaderboardFeed.innerHTML = leaderboardWithTransactions
       .map((entry, index) => {
-        const progress = Math.max(8, (entry.coffee_count / maxCoffeeCount) * 100);
-        const purchaseCopy = `${entry.coffee_count.toLocaleString()} cups`;
+        const progress = Math.max(
+          8,
+          (entry.transaction_count / maxTransactionCount) * 100
+        );
+        const transactionLabel =
+          entry.transaction_count === 1 ? 'transaction' : 'transactions';
+        const purchaseCopy = `${entry.transaction_count.toLocaleString()} ${transactionLabel}`;
 
         return `
         <div class="leaderboard-item">
@@ -589,9 +596,20 @@
     document.body.classList.toggle('theme-dark', dark);
   }
 
+  function getThemeFromUrl() {
+    const theme = new URLSearchParams(window.location.search).get('theme');
+    return ['dark', 'light'].includes(theme) ? theme : null;
+  }
+
   function initThemeToggle() {
+    const urlTheme = getThemeFromUrl();
     const saved = localStorage.getItem('coffee-dash-theme');
-    if (saved === 'dark') applyTheme(true);
+
+    if (urlTheme) {
+      applyTheme(urlTheme === 'dark');
+    } else if (saved === 'dark') {
+      applyTheme(true);
+    }
 
     const btn = document.getElementById('theme-toggle');
     if (btn) {
