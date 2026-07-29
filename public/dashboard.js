@@ -130,10 +130,6 @@
     return Boolean(tx?.buyer_display_name && tx.buyer_display_name !== 'Mystery patron');
   }
 
-  function isKnownLeaderboardEntry(entry) {
-    return Boolean(entry?.is_known && entry.display_name && entry.display_name !== 'Mystery patron');
-  }
-
   function getTransactionKey(tx) {
     if (!tx) return null;
     return `${tx.time || ''}:${tx.amount_cents || 0}:${tx.status || ''}`;
@@ -337,12 +333,8 @@
   }
 
   function renderLeaderboard(leaderboard) {
-    const entries = leaderboard || [];
-    const namedLeaderboard = entries.filter(isKnownLeaderboardEntry);
-    const sorted = (namedLeaderboard.length ? namedLeaderboard : entries)
-      .slice()
-      .sort((a, b) => (b.revenue_cents || 0) - (a.revenue_cents || 0));
-    const visibleLeaderboard = sorted.slice(0, 8);
+    // The API returns the board pre-ranked by revenue; render it as-is.
+    const visibleLeaderboard = (leaderboard || []).slice(0, 8);
 
     if (!visibleLeaderboard.length) {
       els.leaderboardFeed.innerHTML =
@@ -355,25 +347,23 @@
       transaction_count: Number.isFinite(Number(entry.transactions))
         ? Number(entry.transactions)
         : 0,
+      revenue: Number.isFinite(Number(entry.revenue_cents)) ? Number(entry.revenue_cents) : 0,
     }));
-    const maxTransactionCount = Math.max(
-      ...leaderboardWithTransactions.map((entry) => entry.transaction_count),
+    const maxRevenue = Math.max(
+      ...leaderboardWithTransactions.map((entry) => entry.revenue),
       1
     );
 
     els.leaderboardFeed.innerHTML = leaderboardWithTransactions
       .map((entry, index) => {
-        const progress = Math.max(
-          8,
-          (entry.transaction_count / maxTransactionCount) * 100
-        );
+        const progress = Math.max(8, (entry.revenue / maxRevenue) * 100);
         const transactionLabel =
           entry.transaction_count === 1 ? 'transaction' : 'transactions';
         const purchaseCopy = `${entry.transaction_count.toLocaleString()} ${transactionLabel}`;
 
         return `
         <div class="leaderboard-item">
-          <div class="leaderboard-rank">${index + 1}</div>
+          <div class="leaderboard-rank">${entry.rank || index + 1}</div>
           <div class="leaderboard-main">
             <div class="leaderboard-topline">
               <span class="leaderboard-name">${escapeHtml(entry.display_name || 'Coffee buyer')}</span>
