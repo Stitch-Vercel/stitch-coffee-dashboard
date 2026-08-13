@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { config } from './config.js'
 import { healthRoute } from './routes/health.js'
 import { apiRoute } from './routes/api.js'
+import { dashboardConfigRoute } from './routes/dashboard-config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -19,15 +20,16 @@ const app = Fastify({
   },
 })
 
+// Register dynamic routes
+await app.register(dashboardConfigRoute)
+await app.register(healthRoute)
+await app.register(apiRoute)
+
 // Serve static files from public/
 await app.register(fastifyStatic, {
   root: publicRoot,
   prefix: '/',
 })
-
-// Register routes
-await app.register(healthRoute)
-await app.register(apiRoute)
 
 // Start server
 try {

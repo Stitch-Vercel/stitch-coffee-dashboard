@@ -51,6 +51,12 @@ Required Vercel environment variables:
 - `EXPRESS_INTERNAL_API_URL`
 - `EXPRESS_INTERNAL_API_TOKEN`
 
+Optional Vercel environment variables:
+
+- `STITCH_COFFEE_DEMO_MODE=true` enables demo-only display hacks:
+  random staff names for mystery patrons, random staff-card leaderboard names,
+  and the looping R10k milestone. It defaults to off when unset.
+
 Production `EXPRESS_INTERNAL_API_URL`:
 
 ```text
