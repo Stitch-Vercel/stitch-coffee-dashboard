@@ -444,20 +444,17 @@
         const transactionLabel =
           entry.transaction_count === 1 ? 'transaction' : 'transactions';
         const purchaseCopy = `${entry.transaction_count.toLocaleString()} ${transactionLabel}`;
-        // DEMO ONLY: make unclaimed leaderboard rows look like staff-card rows.
-        const hasKnownLeaderboardName = entry.is_known && !isUnknownBuyerName(entry.display_name);
-        const leaderboardName = hasKnownLeaderboardName
-          ? entry.display_name
-          : getDemoNameForKey(
-              [
-                entry.rank || index + 1,
-                entry.transaction_count,
-                entry.revenue,
-                entry.last_purchase_at || '',
-                entry.display_name || '',
-              ].join(':'),
-              index * 7
-            );
+        // DEMO ONLY: make every leaderboard row look like a random staff-card row.
+        const leaderboardName = getDemoNameForKey(
+          [
+            entry.rank || index + 1,
+            entry.transaction_count,
+            entry.revenue,
+            entry.last_purchase_at || '',
+            entry.display_name || '',
+          ].join(':'),
+          index * 7
+        );
 
         return `
         <div class="leaderboard-item">
