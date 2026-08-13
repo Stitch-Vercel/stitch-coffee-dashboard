@@ -15,11 +15,44 @@
   const MILESTONE_STEP_CENTS = 500_000; // after the early ladder, a milestone every R5k
   const GOAL_RING_RADIUS = 29;
   const GOAL_RING_CIRCUMFERENCE = 2 * Math.PI * GOAL_RING_RADIUS;
+  // DEMO ONLY: replace unmatched cards with deterministic names from the staff card list.
+  const DEMO_MYSTERY_PATRON_NAMES = [
+    'Bianca-jade Sutton',
+    'Cady Ward',
+    'Caleb Naidoo',
+    'Christian Still',
+    'Christine Snyders',
+    'Christoph Kuhn',
+    'Damian Wilson',
+    'Elena Aiello',
+    'Henk Van Jaarsveld',
+    'James Bellairs',
+    'Jeremy Wagemans',
+    'Jessica Walters',
+    'Jordan Sher',
+    'Josh Gordon',
+    'Kaylin Naidoo',
+    'Lebo Morojele',
+    'Matteo Kalogirou',
+    'Musonda Chalwe',
+    'Nika Coskey',
+    'Philip Cronje',
+    'Rebecca Wewege',
+    'Robbie Van Eck',
+    'Robert Ketteringham',
+    'Robert Lee',
+  ];
+  // DEMO ONLY: keep the all-time milestone poised R2 below R10k so every sale completes it.
+  const DEMO_MILESTONE_TARGET_CENTS = 1_000_000;
+  const DEMO_MILESTONE_OFFSET_CENTS = COFFEE_PRICE_CENTS;
+  const DEMO_MILESTONE_RESET_DELAY_MS = 4_400;
 
   let lastKnownData = null;
   let lastSeenTransactionKey = null;
   let lastRenderedTransactionKey = null;
   let saleMomentTimer = null;
+  let demoMilestoneResetTimer = null;
+  let demoMilestoneReachedUntil = 0;
   let refreshTimer = null;
   let prevAllTimeRevenueCents = null;
 
@@ -88,6 +121,26 @@
     return Math.max(0, Math.round(value / COFFEE_PRICE_CENTS));
   }
 
+  function getDemoAllTimeRevenueCents() {
+    if (Date.now() < demoMilestoneReachedUntil) {
+      return DEMO_MILESTONE_TARGET_CENTS;
+    }
+
+    return DEMO_MILESTONE_TARGET_CENTS - DEMO_MILESTONE_OFFSET_CENTS;
+  }
+
+  function triggerDemoMilestoneLoop() {
+    demoMilestoneReachedUntil = Date.now() + DEMO_MILESTONE_RESET_DELAY_MS;
+    window.clearTimeout(demoMilestoneResetTimer);
+    demoMilestoneResetTimer = window.setTimeout(() => {
+      demoMilestoneReachedUntil = 0;
+
+      if (lastKnownData) {
+        updateDashboard(lastKnownData);
+      }
+    }, DEMO_MILESTONE_RESET_DELAY_MS);
+  }
+
   function relativeTime(isoString) {
     const now = new Date();
     const then = new Date(isoString);
@@ -122,8 +175,25 @@
     return tx?.store_name || tx?.terminal_label || normalizeSource(tx?.source);
   }
 
+  function getDemoMysteryPatronName(tx) {
+    const key = getTransactionKey(tx) || `${Date.now()}`;
+    let hash = 0;
+
+    for (let i = 0; i < key.length; i++) {
+      hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    }
+
+    return DEMO_MYSTERY_PATRON_NAMES[hash % DEMO_MYSTERY_PATRON_NAMES.length];
+  }
+
   function getBuyerDisplayName(tx) {
-    return tx?.buyer_display_name || 'Mystery patron';
+    const buyerName = tx?.buyer_display_name;
+
+    if (buyerName && buyerName !== 'Mystery patron' && buyerName !== 'Unknown buyer') {
+      return buyerName;
+    }
+
+    return getDemoMysteryPatronName(tx);
   }
 
   function isNamedBuyer(tx) {
@@ -233,9 +303,9 @@
     })();
   }
 
-  function maybeCelebrateMilestone(allTimeRevenueCents) {
+  function maybeCelebrateMilestone(allTimeRevenueCents, milestoneOverrideCents) {
     if (prevAllTimeRevenueCents !== null && allTimeRevenueCents > prevAllTimeRevenueCents) {
-      const target = getAllTimeMilestone(prevAllTimeRevenueCents);
+      const target = milestoneOverrideCents ?? getAllTimeMilestone(prevAllTimeRevenueCents);
       if (allTimeRevenueCents >= target) celebrateMilestone();
     }
     prevAllTimeRevenueCents = allTimeRevenueCents;
@@ -403,8 +473,8 @@
     return Math.ceil((totalRevenueCents + 1) / MILESTONE_STEP_CENTS) * MILESTONE_STEP_CENTS;
   }
 
-  function updateAllTimeMilestone(allTimeRevenueCents) {
-    const nextMilestone = getAllTimeMilestone(allTimeRevenueCents);
+  function updateAllTimeMilestone(allTimeRevenueCents, milestoneOverrideCents) {
+    const nextMilestone = milestoneOverrideCents ?? getAllTimeMilestone(allTimeRevenueCents);
     const progress = Math.min(allTimeRevenueCents / nextMilestone, 1);
     const percent = Math.floor(progress * 100);
 
@@ -446,8 +516,8 @@
     els.paceCopy.innerHTML = `<span class="pace-rate">${formatCompactZAR(hourlyRunRate)}</span> per hour run-rate`;
   }
 
-  function updateMilestone(allTimeRevenueCents) {
-    const nextMilestone = getAllTimeMilestone(allTimeRevenueCents);
+  function updateMilestone(allTimeRevenueCents, milestoneOverrideCents) {
+    const nextMilestone = milestoneOverrideCents ?? getAllTimeMilestone(allTimeRevenueCents);
     const remaining = nextMilestone - allTimeRevenueCents;
     els.milestoneValue.textContent = formatCompactZAR(nextMilestone);
     els.milestoneCopy.textContent = `${formatCompactZAR(remaining)} in sales to go`;
@@ -483,6 +553,7 @@
 
     if (newestTx.status !== 'SUCCESS') return;
 
+    triggerDemoMilestoneLoop();
     showSaleMoment(newestTx);
   }
 
@@ -490,7 +561,7 @@
   function updateDashboard(data) {
     const today = data.today || {};
     const week = data.week || {};
-    const allTime = data.all_time || {};
+    const demoAllTimeRevenueCents = getDemoAllTimeRevenueCents();
     const streak = data.streak || {};
     const hourlyActivity = Object.fromEntries(
       (data.hourly_breakdown || []).map((row) => [row.hour, row.count])
@@ -511,15 +582,15 @@
 
     els.statBestHour.textContent = streak.best_hour || '--:00';
 
-    animateNumber(els.statAllTimeRevenue, allTime.total_revenue_cents, formatZAR);
-    animateNumber(els.statAllTimeTransactions, getCoffeeCount(allTime.total_revenue_cents), (v) =>
+    animateNumber(els.statAllTimeRevenue, demoAllTimeRevenueCents, formatZAR);
+    animateNumber(els.statAllTimeTransactions, getCoffeeCount(demoAllTimeRevenueCents), (v) =>
       Math.round(v).toLocaleString()
     );
 
-    updateAllTimeMilestone(allTime.total_revenue_cents ?? 0);
+    updateAllTimeMilestone(demoAllTimeRevenueCents, DEMO_MILESTONE_TARGET_CENTS);
     updatePace(today.revenue_cents ?? 0);
-    updateMilestone(allTime.total_revenue_cents ?? 0);
-    maybeCelebrateMilestone(allTime.total_revenue_cents ?? 0);
+    updateMilestone(demoAllTimeRevenueCents, DEMO_MILESTONE_TARGET_CENTS);
+    maybeCelebrateMilestone(demoAllTimeRevenueCents, DEMO_MILESTONE_TARGET_CENTS);
 
     // Hourly chart
     renderHourlyChart(hourlyActivity);
