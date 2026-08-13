@@ -175,21 +175,35 @@
     return tx?.store_name || tx?.terminal_label || normalizeSource(tx?.source);
   }
 
-  function getDemoMysteryPatronName(tx) {
-    const key = getTransactionKey(tx) || `${Date.now()}`;
+  function isUnknownBuyerName(name) {
+    const normalizedName = String(name || '').trim().toLowerCase();
+
+    return (
+      !normalizedName ||
+      normalizedName === 'mystery patron' ||
+      normalizedName === 'unknown buyer' ||
+      normalizedName === 'coffee buyer'
+    );
+  }
+
+  function getDemoNameForKey(key, offset = 0) {
     let hash = 0;
 
     for (let i = 0; i < key.length; i++) {
       hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
     }
 
-    return DEMO_MYSTERY_PATRON_NAMES[hash % DEMO_MYSTERY_PATRON_NAMES.length];
+    return DEMO_MYSTERY_PATRON_NAMES[(hash + offset) % DEMO_MYSTERY_PATRON_NAMES.length];
+  }
+
+  function getDemoMysteryPatronName(tx) {
+    return getDemoNameForKey(getTransactionKey(tx) || `${Date.now()}`);
   }
 
   function getBuyerDisplayName(tx) {
     const buyerName = tx?.buyer_display_name;
 
-    if (buyerName && buyerName !== 'Mystery patron' && buyerName !== 'Unknown buyer') {
+    if (!isUnknownBuyerName(buyerName)) {
       return buyerName;
     }
 
@@ -430,13 +444,27 @@
         const transactionLabel =
           entry.transaction_count === 1 ? 'transaction' : 'transactions';
         const purchaseCopy = `${entry.transaction_count.toLocaleString()} ${transactionLabel}`;
+        // DEMO ONLY: make unclaimed leaderboard rows look like staff-card rows.
+        const hasKnownLeaderboardName = entry.is_known && !isUnknownBuyerName(entry.display_name);
+        const leaderboardName = hasKnownLeaderboardName
+          ? entry.display_name
+          : getDemoNameForKey(
+              [
+                entry.rank || index + 1,
+                entry.transaction_count,
+                entry.revenue,
+                entry.last_purchase_at || '',
+                entry.display_name || '',
+              ].join(':'),
+              index * 7
+            );
 
         return `
         <div class="leaderboard-item">
           <div class="leaderboard-rank">${entry.rank || index + 1}</div>
           <div class="leaderboard-main">
             <div class="leaderboard-topline">
-              <span class="leaderboard-name">${escapeHtml(entry.display_name || 'Coffee buyer')}</span>
+              <span class="leaderboard-name">${escapeHtml(leaderboardName)}</span>
               <span class="leaderboard-value">${formatCompactZAR(entry.revenue_cents || 0)}</span>
             </div>
             <div class="leaderboard-progress">
@@ -444,7 +472,7 @@
             </div>
             <div class="leaderboard-subline">
               <span>${purchaseCopy}</span>
-              <span>${entry.is_known ? 'STAFF CARD' : 'UNCLAIMED'}</span>
+              <span>STAFF CARD</span>
             </div>
           </div>
         </div>`;
