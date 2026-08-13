@@ -21,6 +21,10 @@
       "dest": "/api/health.ts"
     },
     {
+      "src": "/dashboard-config.js",
+      "dest": "/api/dashboard-config.ts"
+    },
+    {
       "src": "/health",
       "dest": "/api/health.ts"
     },
