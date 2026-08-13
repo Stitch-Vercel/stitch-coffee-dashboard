@@ -15,6 +15,33 @@
   const MILESTONE_STEP_CENTS = 500_000; // after the early ladder, a milestone every R5k
   const GOAL_RING_RADIUS = 29;
   const GOAL_RING_CIRCUMFERENCE = 2 * Math.PI * GOAL_RING_RADIUS;
+  // DEMO ONLY: replace unmatched cards with deterministic names from the staff card list.
+  const DEMO_MYSTERY_PATRON_NAMES = [
+    'Bianca-jade Sutton',
+    'Cady Ward',
+    'Caleb Naidoo',
+    'Christian Still',
+    'Christine Snyders',
+    'Christoph Kuhn',
+    'Damian Wilson',
+    'Elena Aiello',
+    'Henk Van Jaarsveld',
+    'James Bellairs',
+    'Jeremy Wagemans',
+    'Jessica Walters',
+    'Jordan Sher',
+    'Josh Gordon',
+    'Kaylin Naidoo',
+    'Lebo Morojele',
+    'Matteo Kalogirou',
+    'Musonda Chalwe',
+    'Nika Coskey',
+    'Philip Cronje',
+    'Rebecca Wewege',
+    'Robbie Van Eck',
+    'Robert Ketteringham',
+    'Robert Lee',
+  ];
 
   let lastKnownData = null;
   let lastSeenTransactionKey = null;
@@ -122,8 +149,25 @@
     return tx?.store_name || tx?.terminal_label || normalizeSource(tx?.source);
   }
 
+  function getDemoMysteryPatronName(tx) {
+    const key = getTransactionKey(tx) || `${Date.now()}`;
+    let hash = 0;
+
+    for (let i = 0; i < key.length; i++) {
+      hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    }
+
+    return DEMO_MYSTERY_PATRON_NAMES[hash % DEMO_MYSTERY_PATRON_NAMES.length];
+  }
+
   function getBuyerDisplayName(tx) {
-    return tx?.buyer_display_name || 'Mystery patron';
+    const buyerName = tx?.buyer_display_name;
+
+    if (buyerName && buyerName !== 'Mystery patron' && buyerName !== 'Unknown buyer') {
+      return buyerName;
+    }
+
+    return getDemoMysteryPatronName(tx);
   }
 
   function isNamedBuyer(tx) {
