@@ -15,6 +15,8 @@
   const MILESTONE_STEP_CENTS = 500_000; // after the early ladder, a milestone every R5k
   const GOAL_RING_RADIUS = 29;
   const GOAL_RING_CIRCUMFERENCE = 2 * Math.PI * GOAL_RING_RADIUS;
+  const DASHBOARD_CONFIG = window.STITCH_COFFEE_DASHBOARD_CONFIG || {};
+  const DEMO_MODE = DASHBOARD_CONFIG.demoMode === true;
   // DEMO ONLY: replace unmatched cards with deterministic names from the staff card list.
   const DEMO_MYSTERY_PATRON_NAMES = [
     'Bianca-jade Sutton',
@@ -196,7 +198,11 @@
       return buyerName;
     }
 
-    return getDemoMysteryPatronName(tx);
+    if (DEMO_MODE) {
+      return getDemoMysteryPatronName(tx);
+    }
+
+    return 'Mystery patron';
   }
 
   function isNamedBuyer(tx) {
@@ -433,17 +439,19 @@
         const transactionLabel =
           entry.transaction_count === 1 ? 'transaction' : 'transactions';
         const purchaseCopy = `${entry.transaction_count.toLocaleString()} ${transactionLabel}`;
-        // DEMO ONLY: make every leaderboard row look like a random staff-card row.
-        const leaderboardName = getDemoNameForKey(
-          [
-            entry.rank || index + 1,
-            entry.transaction_count,
-            entry.revenue,
-            entry.last_purchase_at || '',
-            entry.display_name || '',
-          ].join(':'),
-          index * 7
-        );
+        const leaderboardName = DEMO_MODE
+          ? getDemoNameForKey(
+              [
+                entry.rank || index + 1,
+                entry.transaction_count,
+                entry.revenue,
+                entry.last_purchase_at || '',
+                entry.display_name || '',
+              ].join(':'),
+              index * 7
+            )
+          : entry.display_name || 'Coffee buyer';
+        const cardLabel = DEMO_MODE ? 'STAFF CARD' : entry.is_known ? 'STAFF CARD' : 'UNCLAIMED';
 
         return `
         <div class="leaderboard-item">
@@ -458,7 +466,7 @@
             </div>
             <div class="leaderboard-subline">
               <span>${purchaseCopy}</span>
-              <span>STAFF CARD</span>
+              <span>${cardLabel}</span>
             </div>
           </div>
         </div>`;
@@ -567,7 +575,10 @@
 
     if (newestTx.status !== 'SUCCESS') return;
 
-    triggerDemoMilestoneLoop();
+    if (DEMO_MODE) {
+      triggerDemoMilestoneLoop();
+    }
+
     showSaleMoment(newestTx);
   }
 
@@ -575,7 +586,10 @@
   function updateDashboard(data) {
     const today = data.today || {};
     const week = data.week || {};
-    const demoAllTimeRevenueCents = getDemoAllTimeRevenueCents();
+    const allTime = data.all_time || {};
+    const realAllTimeRevenueCents = allTime.revenue_cents ?? 0;
+    const allTimeRevenueCents = DEMO_MODE ? getDemoAllTimeRevenueCents() : realAllTimeRevenueCents;
+    const milestoneOverrideCents = DEMO_MODE ? DEMO_MILESTONE_TARGET_CENTS : undefined;
     const streak = data.streak || {};
     const hourlyActivity = Object.fromEntries(
       (data.hourly_breakdown || []).map((row) => [row.hour, row.count])
@@ -596,15 +610,15 @@
 
     els.statBestHour.textContent = streak.best_hour || '--:00';
 
-    animateNumber(els.statAllTimeRevenue, demoAllTimeRevenueCents, formatZAR);
-    animateNumber(els.statAllTimeTransactions, getCoffeeCount(demoAllTimeRevenueCents), (v) =>
+    animateNumber(els.statAllTimeRevenue, allTimeRevenueCents, formatZAR);
+    animateNumber(els.statAllTimeTransactions, getCoffeeCount(allTimeRevenueCents), (v) =>
       Math.round(v).toLocaleString()
     );
 
-    updateAllTimeMilestone(demoAllTimeRevenueCents, DEMO_MILESTONE_TARGET_CENTS);
+    updateAllTimeMilestone(allTimeRevenueCents, milestoneOverrideCents);
     updatePace(today.revenue_cents ?? 0);
-    updateMilestone(demoAllTimeRevenueCents, DEMO_MILESTONE_TARGET_CENTS);
-    maybeCelebrateMilestone(demoAllTimeRevenueCents, DEMO_MILESTONE_TARGET_CENTS);
+    updateMilestone(allTimeRevenueCents, milestoneOverrideCents);
+    maybeCelebrateMilestone(allTimeRevenueCents, milestoneOverrideCents);
 
     // Hourly chart
     renderHourlyChart(hourlyActivity);
