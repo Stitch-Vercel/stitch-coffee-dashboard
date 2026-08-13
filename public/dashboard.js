@@ -42,11 +42,17 @@
     'Robert Ketteringham',
     'Robert Lee',
   ];
+  // DEMO ONLY: keep the all-time milestone poised R2 below R10k so every sale completes it.
+  const DEMO_MILESTONE_TARGET_CENTS = 1_000_000;
+  const DEMO_MILESTONE_OFFSET_CENTS = COFFEE_PRICE_CENTS;
+  const DEMO_MILESTONE_RESET_DELAY_MS = 4_400;
 
   let lastKnownData = null;
   let lastSeenTransactionKey = null;
   let lastRenderedTransactionKey = null;
   let saleMomentTimer = null;
+  let demoMilestoneResetTimer = null;
+  let demoMilestoneReachedUntil = 0;
   let refreshTimer = null;
   let prevAllTimeRevenueCents = null;
 
@@ -113,6 +119,26 @@
   function getCoffeeCount(cents) {
     const value = Number.isFinite(Number(cents)) ? Number(cents) : 0;
     return Math.max(0, Math.round(value / COFFEE_PRICE_CENTS));
+  }
+
+  function getDemoAllTimeRevenueCents() {
+    if (Date.now() < demoMilestoneReachedUntil) {
+      return DEMO_MILESTONE_TARGET_CENTS;
+    }
+
+    return DEMO_MILESTONE_TARGET_CENTS - DEMO_MILESTONE_OFFSET_CENTS;
+  }
+
+  function triggerDemoMilestoneLoop() {
+    demoMilestoneReachedUntil = Date.now() + DEMO_MILESTONE_RESET_DELAY_MS;
+    window.clearTimeout(demoMilestoneResetTimer);
+    demoMilestoneResetTimer = window.setTimeout(() => {
+      demoMilestoneReachedUntil = 0;
+
+      if (lastKnownData) {
+        updateDashboard(lastKnownData);
+      }
+    }, DEMO_MILESTONE_RESET_DELAY_MS);
   }
 
   function relativeTime(isoString) {
@@ -277,9 +303,9 @@
     })();
   }
 
-  function maybeCelebrateMilestone(allTimeRevenueCents) {
+  function maybeCelebrateMilestone(allTimeRevenueCents, milestoneOverrideCents) {
     if (prevAllTimeRevenueCents !== null && allTimeRevenueCents > prevAllTimeRevenueCents) {
-      const target = getAllTimeMilestone(prevAllTimeRevenueCents);
+      const target = milestoneOverrideCents ?? getAllTimeMilestone(prevAllTimeRevenueCents);
       if (allTimeRevenueCents >= target) celebrateMilestone();
     }
     prevAllTimeRevenueCents = allTimeRevenueCents;
@@ -447,8 +473,8 @@
     return Math.ceil((totalRevenueCents + 1) / MILESTONE_STEP_CENTS) * MILESTONE_STEP_CENTS;
   }
 
-  function updateAllTimeMilestone(allTimeRevenueCents) {
-    const nextMilestone = getAllTimeMilestone(allTimeRevenueCents);
+  function updateAllTimeMilestone(allTimeRevenueCents, milestoneOverrideCents) {
+    const nextMilestone = milestoneOverrideCents ?? getAllTimeMilestone(allTimeRevenueCents);
     const progress = Math.min(allTimeRevenueCents / nextMilestone, 1);
     const percent = Math.floor(progress * 100);
 
@@ -490,8 +516,8 @@
     els.paceCopy.innerHTML = `<span class="pace-rate">${formatCompactZAR(hourlyRunRate)}</span> per hour run-rate`;
   }
 
-  function updateMilestone(allTimeRevenueCents) {
-    const nextMilestone = getAllTimeMilestone(allTimeRevenueCents);
+  function updateMilestone(allTimeRevenueCents, milestoneOverrideCents) {
+    const nextMilestone = milestoneOverrideCents ?? getAllTimeMilestone(allTimeRevenueCents);
     const remaining = nextMilestone - allTimeRevenueCents;
     els.milestoneValue.textContent = formatCompactZAR(nextMilestone);
     els.milestoneCopy.textContent = `${formatCompactZAR(remaining)} in sales to go`;
@@ -527,6 +553,7 @@
 
     if (newestTx.status !== 'SUCCESS') return;
 
+    triggerDemoMilestoneLoop();
     showSaleMoment(newestTx);
   }
 
@@ -534,7 +561,7 @@
   function updateDashboard(data) {
     const today = data.today || {};
     const week = data.week || {};
-    const allTime = data.all_time || {};
+    const demoAllTimeRevenueCents = getDemoAllTimeRevenueCents();
     const streak = data.streak || {};
     const hourlyActivity = Object.fromEntries(
       (data.hourly_breakdown || []).map((row) => [row.hour, row.count])
@@ -555,15 +582,15 @@
 
     els.statBestHour.textContent = streak.best_hour || '--:00';
 
-    animateNumber(els.statAllTimeRevenue, allTime.total_revenue_cents, formatZAR);
-    animateNumber(els.statAllTimeTransactions, getCoffeeCount(allTime.total_revenue_cents), (v) =>
+    animateNumber(els.statAllTimeRevenue, demoAllTimeRevenueCents, formatZAR);
+    animateNumber(els.statAllTimeTransactions, getCoffeeCount(demoAllTimeRevenueCents), (v) =>
       Math.round(v).toLocaleString()
     );
 
-    updateAllTimeMilestone(allTime.total_revenue_cents ?? 0);
+    updateAllTimeMilestone(demoAllTimeRevenueCents, DEMO_MILESTONE_TARGET_CENTS);
     updatePace(today.revenue_cents ?? 0);
-    updateMilestone(allTime.total_revenue_cents ?? 0);
-    maybeCelebrateMilestone(allTime.total_revenue_cents ?? 0);
+    updateMilestone(demoAllTimeRevenueCents, DEMO_MILESTONE_TARGET_CENTS);
+    maybeCelebrateMilestone(demoAllTimeRevenueCents, DEMO_MILESTONE_TARGET_CENTS);
 
     // Hourly chart
     renderHourlyChart(hourlyActivity);
