@@ -123,6 +123,13 @@
     return Math.max(0, Math.round(value / COFFEE_PRICE_CENTS));
   }
 
+  function getRealAllTimeRevenueCents(data) {
+    const allTime = data?.all_time || {};
+    const value = allTime.total_revenue_cents ?? allTime.revenue_cents ?? 0;
+
+    return Number.isFinite(Number(value)) ? Number(value) : 0;
+  }
+
   function getDemoAllTimeRevenueCents() {
     if (Date.now() < demoMilestoneReachedUntil) {
       return DEMO_MILESTONE_TARGET_CENTS;
@@ -586,8 +593,7 @@
   function updateDashboard(data) {
     const today = data.today || {};
     const week = data.week || {};
-    const allTime = data.all_time || {};
-    const realAllTimeRevenueCents = allTime.revenue_cents ?? 0;
+    const realAllTimeRevenueCents = getRealAllTimeRevenueCents(data);
     const allTimeRevenueCents = DEMO_MODE ? getDemoAllTimeRevenueCents() : realAllTimeRevenueCents;
     const milestoneOverrideCents = DEMO_MODE ? DEMO_MILESTONE_TARGET_CENTS : undefined;
     const streak = data.streak || {};
