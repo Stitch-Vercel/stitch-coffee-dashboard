@@ -34,8 +34,15 @@
   --fg-error: #C42340;
   --fg-warning: #A84A00;
 
+  /* --bg-1 is the card surface; the page and header are split out so the dark
+     theme can stack #0A090C page / #100E13 header / #1D1C1F card */
   --bg-1: var(--stitch-white);
-  --bg-2: var(--stitch-platinum);
+  --bg-page: var(--stitch-white);
+  --bg-header: var(--stitch-white);
+  --bg-track: var(--stitch-platinum);
+  --bg-track-alt: var(--stitch-silver);
+  --bg-chip: var(--stitch-platinum);
+  --bg-row: var(--stitch-platinum);
   --bg-inverse: var(--stitch-carbon);
   --bg-brand: var(--stitch-violet);
   --bg-brand-soft: var(--stitch-violet-haze);
@@ -45,6 +52,20 @@
 
   --border-1: var(--stitch-titanium);
   --border-2: #E3E3E3;
+  --border-3: var(--stitch-platinum);
+
+  /* ---- Component tokens the theme re-points ---- */
+  --fg-brand-strong: var(--stitch-violet-deep);
+  --fg-faint: var(--stitch-titanium);
+  --hero-gradient: linear-gradient(180deg, #8B54FF 0%, #6E2CFF 34%, #5A21D6 68%, #4F1FBA 100%);
+  --hero-fg: var(--stitch-white);
+  --hero-fg-muted: rgba(255, 255, 255, 0.75);
+  --hero-divider: rgba(255, 255, 255, 0.28);
+  --leader-bg: var(--stitch-black);
+  --pill-bg: var(--stitch-black);
+  --ticker-bg: var(--stitch-black);
+  --cup-stroke: var(--stitch-black);
+  --cup-stroke-muted: var(--stitch-titanium);
 
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -80,7 +101,7 @@ html {
 body {
   font-family: var(--font-sans);
   font-optical-sizing: auto;
-  background: var(--bg-1);
+  background: var(--bg-page);
   color: var(--fg-1);
   overflow: hidden;
   width: 1920px;
@@ -117,7 +138,7 @@ h1, h2 {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: var(--bg-1);
+  background: var(--bg-page);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -269,14 +290,14 @@ h1, h2 {
 .sale-cup-handle,
 .sale-cup-saucer {
   fill: none;
-  stroke: var(--stitch-black);
+  stroke: var(--cup-stroke);
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .sale-cup-saucer {
-  stroke: var(--stitch-titanium);
+  stroke: var(--cup-stroke-muted);
 }
 
 .sale-cup-pour {
@@ -356,7 +377,7 @@ h1, h2 {
   height: 80px;
   padding: 0 40px;
   border-bottom: 1px solid var(--border-2);
-  background: var(--bg-1);
+  background: var(--bg-header);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -368,10 +389,38 @@ h1, h2 {
   gap: 24px;
 }
 
+/* The logo doubles as the theme switch */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  margin: -6px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: opacity 0.2s ease;
+}
+
+.theme-toggle:hover {
+  opacity: 0.7;
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--stitch-violet);
+  outline-offset: 2px;
+}
+
 .header-logo {
   height: 26px;
   width: auto;
   display: block;
+}
+
+.header-logo.logo-dark {
+  display: none;
 }
 
 .header-divider {
@@ -401,7 +450,7 @@ h1, h2 {
   padding: 0 14px;
   border-radius: var(--radius-full);
   background: var(--bg-brand-soft);
-  color: var(--stitch-violet-deep);
+  color: var(--fg-brand-strong);
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -479,7 +528,7 @@ h1, h2 {
 .hero {
   flex: 1.35;
   min-width: 0;
-  background: var(--bg-2);
+  background: var(--hero-gradient);
   border-radius: var(--radius-xl);
   padding: 24px 36px;
   display: flex;
@@ -490,7 +539,7 @@ h1, h2 {
 .hero-label {
   font-size: 16px;
   font-weight: 600;
-  color: var(--fg-2);
+  color: var(--hero-fg);
 }
 
 .hero-revenue {
@@ -499,7 +548,7 @@ h1, h2 {
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.04em;
-  color: var(--fg-1);
+  color: var(--hero-fg);
   white-space: nowrap;
 }
 
@@ -547,18 +596,18 @@ h1, h2 {
   align-items: center;
   gap: 20px;
   font-size: 20px;
-  color: var(--fg-2);
+  color: var(--hero-fg-muted);
 }
 
 .hero-meta strong {
   font-weight: 600;
-  color: var(--fg-1);
+  color: var(--hero-fg);
 }
 
 .hero-meta-divider {
   width: 1px;
   height: 20px;
-  background: var(--border-1);
+  background: var(--hero-divider);
 }
 
 .kpi-grid {
@@ -677,7 +726,7 @@ h1, h2 {
   position: relative;
   height: 12px;
   border-radius: var(--radius-full);
-  background: var(--bg-2);
+  background: var(--bg-track);
   overflow: hidden;
 }
 
@@ -713,7 +762,7 @@ h1, h2 {
   height: 40px;
   padding: 0 20px;
   border-radius: var(--radius-full);
-  background: var(--stitch-black);
+  background: var(--pill-bg);
   color: var(--fg-on-dark);
   font-size: 15px;
   font-weight: 600;
@@ -742,11 +791,9 @@ h1, h2 {
   overflow: hidden;
 }
 
+/* Same white surface as the other cards — the rows inside carry the tint */
 .card.leaderboard-card {
   flex: 1.05;
-  background: var(--bg-2);
-  border-color: var(--bg-2);
-  box-shadow: none;
 }
 
 .card-title {
@@ -821,7 +868,7 @@ h1, h2 {
   min-width: 0;
   height: 12px;
   border-radius: var(--radius-full);
-  background: var(--bg-2);
+  background: var(--bg-track);
   overflow: hidden;
 }
 
@@ -853,7 +900,7 @@ h1, h2 {
   flex-shrink: 0;
   font-size: 13px;
   font-weight: 700;
-  color: var(--stitch-titanium);
+  color: var(--fg-faint);
   text-align: right;
 }
 
@@ -881,7 +928,7 @@ h1, h2 {
   align-items: center;
   gap: 16px;
   padding: 7px 0;
-  border-bottom: 1px solid var(--bg-2);
+  border-bottom: 1px solid var(--border-3);
   flex-shrink: 0;
 }
 
@@ -894,7 +941,7 @@ h1, h2 {
   height: 34px;
   flex-shrink: 0;
   border-radius: var(--radius-full);
-  background: var(--bg-2);
+  background: var(--bg-chip);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -939,7 +986,7 @@ h1, h2 {
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
-  background: var(--bg-2);
+  background: var(--bg-chip);
   color: var(--fg-2);
 }
 
@@ -980,7 +1027,7 @@ h1, h2 {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: var(--bg-1);
+  background: var(--bg-row);
   border-radius: var(--radius-md);
   padding: 7px 14px;
 }
@@ -1032,7 +1079,7 @@ h1, h2 {
 .leaderboard-progress {
   height: 8px;
   border-radius: var(--radius-full);
-  background: var(--bg-2);
+  background: var(--bg-track-alt);
   overflow: hidden;
 }
 
@@ -1053,7 +1100,7 @@ h1, h2 {
 
 /* Leader gets the inverted card with the amber accent */
 .leaderboard-item.is-leader {
-  background: var(--stitch-black);
+  background: var(--leader-bg);
 }
 
 .leaderboard-item.is-leader .leaderboard-rank {
@@ -1081,7 +1128,7 @@ h1, h2 {
 .ticker {
   flex-shrink: 0;
   height: 52px;
-  background: var(--stitch-black);
+  background: var(--ticker-bg);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1204,3 +1251,96 @@ h1, h2 {
 
 .milestone { animation-delay: 0.08s; }
 .bottom-row { animation-delay: 0.16s; }
+
+
+/* ============================================
+   Dark theme
+   Mirrors `Coffee Dashboard Stitch Dark.dc.html`. Set with
+   data-theme="dark" on <html> — by the logo button, the ?theme= query
+   param, or the stored preference.
+   ============================================ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --fg-1: var(--stitch-white);
+  --fg-2: var(--stitch-titanium);
+  --fg-3: var(--stitch-steel);
+  --fg-label: rgba(255, 255, 255, 0.55);
+  --fg-faint: rgba(255, 255, 255, 0.3);
+  --fg-brand-strong: #C4A8FF;
+  --fg-positive: #4BE39B;
+  --fg-error: #FF8195;
+  --fg-warning: #FFB067;
+
+  --bg-page: #0A090C;
+  --bg-header: var(--stitch-black);
+  --bg-1: var(--stitch-carbon);
+  --bg-track: rgba(255, 255, 255, 0.1);
+  --bg-track-alt: rgba(255, 255, 255, 0.12);
+  --bg-chip: rgba(255, 255, 255, 0.1);
+  --bg-row: rgba(255, 255, 255, 0.06);
+  --bg-brand-soft: rgba(110, 44, 255, 0.24);
+  --bg-warning-soft: rgba(255, 122, 0, 0.18);
+
+  --border-1: rgba(255, 255, 255, 0.12);
+  --border-2: rgba(255, 255, 255, 0.1);
+  --border-3: rgba(255, 255, 255, 0.08);
+
+  --shadow-100: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-500: 0 18px 44px rgba(0, 0, 0, 0.62), 0 4px 10px rgba(0, 0, 0, 0.45);
+
+  --hero-gradient: linear-gradient(
+    180deg,
+    #7B3BFF 0%,
+    #6326E0 24%,
+    #3C1A8F 52%,
+    #1F1440 78%,
+    #100E13 100%
+  );
+  --leader-bg: rgba(255, 91, 0, 0.14);
+  --pill-bg: var(--stitch-violet);
+  --ticker-bg: var(--stitch-carbon);
+  --cup-stroke: var(--stitch-white);
+  --cup-stroke-muted: var(--stitch-steel);
+}
+
+:root[data-theme='dark'] .header-logo.logo-light {
+  display: none;
+}
+
+:root[data-theme='dark'] .header-logo.logo-dark {
+  display: block;
+}
+
+/* On dark every KPI tile shares one surface, so the inverted tile flattens */
+:root[data-theme='dark'] .kpi-card-dark {
+  background: var(--bg-1);
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-100);
+}
+
+:root[data-theme='dark'] .kpi-card-dark .kpi-label,
+:root[data-theme='dark'] .kpi-card-dark .kpi-sub {
+  color: var(--fg-label);
+}
+
+:root[data-theme='dark'] .kpi-card-dark .kpi-value {
+  color: var(--fg-1);
+}
+
+:root[data-theme='dark'] .kpi-card-dark .kpi-mono {
+  color: var(--fg-brand);
+}
+
+:root[data-theme='dark'] .hour-count.count-active {
+  color: var(--fg-1);
+}
+
+/* The leader row is an amber wash rather than an inverted card */
+:root[data-theme='dark'] .leaderboard-item.is-leader .leaderboard-progress {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+:root[data-theme='dark'] .sale-moment-inner::after {
+  background: linear-gradient(115deg, transparent 25%, rgba(196, 168, 255, 0.16) 50%, transparent 75%);
+}

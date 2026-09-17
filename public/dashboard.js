@@ -15,6 +15,12 @@
   const MILESTONE_STEP_CENTS = 500_000; // after the early ladder, a milestone every R5k
   const LEADERBOARD_ROWS = 6;
   const TICKER_FALLBACK_SPEED_PX_PER_SEC = 60;
+  const THEME_STORAGE_KEY = 'stitch-coffee-dashboard-theme';
+  const THEMES = ['light', 'dark'];
+  const CONFETTI_COLORS = {
+    light: ['#6E2CFF', '#FF5B00', '#00E979', '#100E13', '#F3ECFF'],
+    dark: ['#6E2CFF', '#FF5B00', '#00E979', '#FFFFFF', '#C4A8FF'],
+  };
   // Thousands are grouped with a no-break space per the Stitch design;
   // decimals always use a point.
   const THOUSANDS_SEPARATOR = ' ';
@@ -89,6 +95,7 @@
     saleMomentMeta: $('sale-moment-meta'),
     loadingOverlay: $('loading-overlay'),
     headerVersion: $('header-version'),
+    themeToggle: $('theme-toggle'),
   };
 
   // ---- Formatting ----
@@ -327,7 +334,7 @@
   function celebrateMilestone() {
     if (typeof confetti !== 'function') return;
 
-    const colors = ['#6E2CFF', '#FF5B00', '#00E979', '#100E13', '#F3ECFF'];
+    const colors = CONFETTI_COLORS[getTheme()] || CONFETTI_COLORS.light;
 
     confetti({ particleCount: 160, spread: 100, startVelocity: 45, scalar: 1.1, origin: { y: 0.55 }, colors });
 
@@ -736,6 +743,39 @@
     window.addEventListener('resize', layout);
   }
 
+  // ---- Theme ----
+  // The palette is resolved before first paint by the inline boot script in
+  // index.html. This only handles switching it afterwards.
+  function getTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  }
+
+  function applyTheme(theme, persist) {
+    const next = THEMES.includes(theme) ? theme : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+
+    if (els.themeToggle) {
+      const other = next === 'dark' ? 'light' : 'dark';
+      els.themeToggle.setAttribute('title', `Switch to ${other} theme`);
+      els.themeToggle.setAttribute('aria-label', `Switch to ${other} theme`);
+    }
+
+    if (persist) {
+      try {
+        window.localStorage.setItem(THEME_STORAGE_KEY, next);
+      } catch (err) {
+        /* storage blocked — the theme still applies for this session */
+      }
+    }
+  }
+
+  function initTheme() {
+    applyTheme(getTheme(), false);
+    els.themeToggle?.addEventListener('click', () => {
+      applyTheme(getTheme() === 'dark' ? 'light' : 'dark', true);
+    });
+  }
+
   // ---- Local Dev Tools ----
   // Only rendered when the page is served from localhost, never in production.
   function initDevTools() {
@@ -767,6 +807,9 @@
 
   // ---- Init ----
   function init() {
+    // Logo click / ?theme= switch between the light and dark palettes
+    initTheme();
+
     // Gap-free marquee
     initTicker();
 
