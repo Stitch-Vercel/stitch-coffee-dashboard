@@ -10,6 +10,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script>
+    // Resolve the theme before first paint so the dashboard never flashes the
+    // wrong palette. ?theme=dark|light wins, else the stored choice, else light.
+    (function () {
+      var theme = 'light';
+      try {
+        var match = /[?&]theme=(dark|light)\b/.exec(window.location.search);
+        var stored = window.localStorage.getItem('stitch-coffee-dashboard-theme');
+        if (match) theme = match[1];
+        else if (stored === 'dark' || stored === 'light') theme = stored;
+      } catch (err) {
+        /* private mode or blocked storage — fall back to light */
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body>
   <!-- Loading Overlay -->
@@ -50,7 +66,10 @@
   <!-- Header -->
   <header class="header">
     <div class="header-left">
-      <img class="header-logo" src="assets/logo-black.svg" alt="Stitch">
+      <button type="button" class="theme-toggle" id="theme-toggle" title="Switch theme">
+        <img class="header-logo logo-light" src="assets/logo-black.svg" alt="Stitch — switch theme">
+        <img class="header-logo logo-dark" src="assets/logo-white.svg" alt="" aria-hidden="true">
+      </button>
       <span class="header-divider"></span>
       <div class="header-brand">
         <h1 class="header-title">Miguel's Coffee Bar</h1>
