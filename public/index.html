@@ -6,7 +6,8 @@
   <title>Miguel's Coffee Bar — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Inter with the optical-size axis stands in for the brand's 18pt/24pt/28pt cuts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -18,174 +19,144 @@
   </div>
 
   <div id="sale-moment" class="sale-moment" aria-live="polite">
-    <div class="sale-moment-art" aria-hidden="true">
-      <svg class="sale-cup" viewBox="0 0 64 64" width="72" height="72">
-        <path class="sale-cup-pour" d="M28 3 V 31" pathLength="1"></path>
-        <!-- Coffee is the cup-interior shape scaled up from the bottom; no
-             clipPath, since old TV browsers drop clips on animated children -->
-        <path class="sale-cup-coffee" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
-        <path class="sale-cup-body" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
-        <path class="sale-cup-handle" d="M41 32 h3.5 a5.5 5.5 0 0 1 0 11 H41"></path>
-        <path class="sale-cup-steam steam-1" d="M23 23 q 3.5 -4 0 -8 q -3.5 -4 0 -7"></path>
-        <path class="sale-cup-steam steam-2" d="M33 23 q 3.5 -4 0 -8 q -3.5 -4 0 -7"></path>
-      </svg>
-    </div>
-    <div class="sale-moment-body">
-      <div class="sale-moment-kicker">New Coffee Sale</div>
-      <div class="sale-moment-amount" id="sale-moment-amount">R 0.00</div>
-      <div class="sale-moment-meta" id="sale-moment-meta">Fresh cup paid on Express</div>
+    <div class="sale-moment-inner">
+      <div class="sale-moment-art" aria-hidden="true">
+        <svg class="sale-cup" viewBox="0 0 64 64" width="76" height="76">
+          <defs>
+            <linearGradient id="sale-cup-brew" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#6E2CFF"></stop>
+              <stop offset="1" stop-color="#FF5B00"></stop>
+            </linearGradient>
+          </defs>
+          <path class="sale-cup-pour" d="M28 3 V 31" pathLength="1"></path>
+          <!-- Coffee is the cup-interior shape scaled up from the bottom; no
+               clipPath, since old TV browsers drop clips on animated children -->
+          <path class="sale-cup-coffee" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
+          <path class="sale-cup-body" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
+          <path class="sale-cup-handle" d="M41 32 h3.5 a5.5 5.5 0 0 1 0 11 H41"></path>
+          <path class="sale-cup-saucer" d="M12 54 H44"></path>
+          <path class="sale-cup-steam steam-1" d="M23 23 q 3.5 -4 0 -8 q -3.5 -4 0 -7"></path>
+          <path class="sale-cup-steam steam-2" d="M33 23 q 3.5 -4 0 -8 q -3.5 -4 0 -7"></path>
+        </svg>
+      </div>
+      <div class="sale-moment-body">
+        <div class="sale-moment-kicker">New coffee sale</div>
+        <div class="sale-moment-amount" id="sale-moment-amount">R 0.00</div>
+        <div class="sale-moment-meta" id="sale-moment-meta">Fresh cup paid on Express</div>
+      </div>
     </div>
   </div>
 
   <!-- Header -->
   <header class="header">
     <div class="header-left">
-      <button class="logo-icon" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle dark/light mode">
-        <span class="steam" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="material-icons">local_cafe</span>
-      </button>
+      <img class="header-logo" src="assets/logo-black.svg" alt="Stitch">
+      <span class="header-divider"></span>
       <div class="header-brand">
         <h1 class="header-title">Miguel's Coffee Bar</h1>
-        <span class="header-subtitle">Powered by <strong>Express</strong><span class="header-version" id="header-version"></span></span>
+        <span class="header-pill">
+          <span class="material-icons" aria-hidden="true">tap_and_play</span>Express · in person
+        </span>
+        <span class="header-version" id="header-version"></span>
       </div>
     </div>
     <div class="header-right">
-      <div class="clock" id="clock">--:--:--</div>
-      <div class="clock-label">SAST</div>
+      <span class="header-live"><span class="live-dot"></span>Live</span>
+      <span class="clock" id="clock">--:--:--</span>
+      <span class="clock-label">SAST</span>
     </div>
   </header>
 
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-revenue" id="hero-revenue">R 0.00</div>
-    <div class="hero-label">TODAY'S SALES</div>
-    <div class="hero-transactions" id="hero-transactions"><strong>0</strong> transactions</div>
-  </section>
-
-  <!-- Signal Row -->
-  <section class="signal-row">
-    <div class="goal-card">
-      <div class="goal-ring-wrapper" id="goal-ring">
-        <svg class="goal-ring-svg" width="74" height="74" viewBox="0 0 74 74">
-          <circle class="goal-ring-track" cx="37" cy="37" r="29"></circle>
-          <circle class="goal-ring-progress" id="goal-ring-progress" cx="37" cy="37" r="29" stroke-dasharray="0 999"></circle>
-        </svg>
-        <div class="goal-ring-inner">
-          <span id="goal-percent">0%</span>
-          <small>ALL TIME</small>
+  <main class="main">
+    <!-- Top row: hero + KPI grid -->
+    <section class="top-row">
+      <div class="hero">
+        <div class="hero-label">Today's sales</div>
+        <div class="hero-revenue" id="hero-revenue">R 0.00</div>
+        <div class="hero-meta">
+          <span class="hero-transactions" id="hero-transactions"><strong>0</strong> transactions</span>
+          <span class="hero-meta-divider"></span>
+          <span class="hero-approved"><span id="stat-success-rate">0.0%</span> approved</span>
         </div>
       </div>
-      <div class="goal-content">
-        <div class="signal-label">All-Time Milestone</div>
-        <div class="signal-value goal-value" id="goal-copy">R 0 <span class="signal-value-sub">/ R 5,000</span></div>
-        <div class="goal-track">
-          <div class="goal-track-fill" id="goal-track-fill"></div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Projected close</div>
+          <div class="kpi-value" id="pace-projection">R 0.00</div>
+          <div class="kpi-sub" id="pace-copy">Waiting for first sale</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Average transaction</div>
+          <div class="kpi-value" id="stat-avg-transaction">R 0.00</div>
+          <div class="kpi-sub">across every cup</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Busiest hour</div>
+          <div class="kpi-value kpi-value-sm" id="stat-best-hour">--:00</div>
+          <div class="kpi-sub" id="stat-best-hour-copy">approved sales peak</div>
+        </div>
+        <div class="kpi-card kpi-card-dark">
+          <div class="kpi-label">Cups poured, all time</div>
+          <div class="kpi-value" id="stat-all-time-transactions">0</div>
+          <div class="kpi-sub"><span class="kpi-mono" id="stat-all-time-revenue">R 0.00</span> banked</div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="signal-card">
-      <div class="signal-label">Projected Close</div>
-      <div class="signal-value" id="pace-projection">R 0.00</div>
-      <div class="signal-subcopy" id="pace-copy">Waiting for first sale</div>
-    </div>
+    <!-- All-time milestone -->
+    <section class="milestone">
+      <div class="milestone-head">
+        <span class="milestone-label">All-time milestone</span>
+        <span class="milestone-figures" id="goal-copy">R 0 <span class="milestone-target">/ R 5 000</span></span>
+      </div>
+      <div class="milestone-body">
+        <div class="milestone-track">
+          <div class="milestone-fill" id="goal-track-fill"></div>
+        </div>
+        <div class="milestone-foot">
+          <span><span id="goal-percent">0%</span> of the way there</span>
+          <span><span class="milestone-mono" id="milestone-copy">R 5 000</span> to go</span>
+        </div>
+      </div>
+      <div class="milestone-pill">Next:&nbsp;<span id="milestone-value">R 5 000</span></div>
+    </section>
 
-    <div class="signal-card">
-      <div class="signal-label">Next Milestone</div>
-      <div class="signal-value milestone-value-text" id="milestone-value">R 5,000</div>
-      <div class="signal-subcopy" id="milestone-copy">All-time sales ladder</div>
-    </div>
-  </section>
+    <!-- Bottom row -->
+    <section class="bottom-row">
+      <div class="card hourly-chart-card">
+        <h2 class="card-title">Hourly activity</h2>
+        <div class="card-subtitle">Approved sales per hour</div>
+        <div class="hourly-chart" id="hourly-chart">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
 
-  <!-- Stats Row -->
-  <section class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Transactions Today</div>
-      <div class="stat-value" id="stat-transactions">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Success Rate</div>
-      <div class="stat-value" id="stat-success-rate">0%</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Avg Transaction</div>
-      <div class="stat-value stat-avg" id="stat-avg-transaction">R 0.00</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Best Hour</div>
-      <div class="stat-value" id="stat-best-hour">--:00</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">All-Time Sales</div>
-      <div class="stat-value" id="stat-all-time-revenue">R 0.00</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">All-Time Cups</div>
-      <div class="stat-value stat-all-time-cups" id="stat-all-time-transactions">0</div>
-    </div>
-  </section>
+      <div class="card recent-transactions-card">
+        <div class="card-title-row">
+          <h2 class="card-title">Recent transactions</h2>
+          <span class="card-hint">Updating live</span>
+        </div>
+        <div class="card-subtitle">Tap to pay, in person</div>
+        <div class="transactions-feed" id="transactions-feed">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
 
-  <!-- Middle Section -->
-  <section class="middle-section">
-    <!-- Hourly Activity -->
-    <div class="card hourly-chart-card">
-      <h2 class="card-title">Hourly Activity</h2>
-      <div class="hourly-chart" id="hourly-chart">
-        <!-- Rendered by JS -->
+      <div class="card leaderboard-card">
+        <h2 class="card-title">Coffee leaderboard</h2>
+        <div class="card-subtitle">Biggest spenders, all time</div>
+        <div class="leaderboard-feed" id="leaderboard-feed">
+          <!-- Rendered by JS -->
+        </div>
       </div>
-    </div>
+    </section>
+  </main>
 
-    <!-- Recent Transactions -->
-    <div class="card recent-transactions-card">
-      <div class="card-title-row">
-        <h2 class="card-title">Recent Transactions</h2>
-        <span class="live-dot"></span>
-      </div>
-      <div class="transactions-feed" id="transactions-feed">
-        <!-- Rendered by JS -->
-      </div>
-    </div>
-
-    <!-- Leaderboard -->
-    <div class="card leaderboard-card">
-      <div class="card-title-with-icon">
-        <span class="material-icons">emoji_events</span>
-        <h2 class="card-title">Coffee Leaderboard</h2>
-      </div>
-      <div class="leaderboard-feed" id="leaderboard-feed">
-        <!-- Rendered by JS -->
-      </div>
-    </div>
-  </section>
-
-  <!-- Fun Stats Footer (hidden in redesign but kept for data binding) -->
-  <section class="fun-stats">
-    <div class="fun-stat">
-      <span class="fun-stat-emoji">☕</span>
-      <div class="fun-stat-content">
-        <div class="fun-stat-value" id="fun-cups">0</div>
-        <div class="fun-stat-label">Cups Served Today</div>
-      </div>
-    </div>
-    <div class="fun-stat">
-      <span class="fun-stat-emoji">🔥</span>
-      <div class="fun-stat-content">
-        <div class="fun-stat-value" id="fun-streak">0</div>
-        <div class="fun-stat-label">Success Streak</div>
-      </div>
-    </div>
-    <div class="fun-stat">
-      <span class="fun-stat-emoji">📊</span>
-      <div class="fun-stat-content">
-        <div class="fun-stat-value" id="fun-weekly">R 0.00</div>
-        <div class="fun-stat-label">This Week</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Ticker -->
+  <!-- Ticker: JS clones the content until it covers the strip, then scrolls
+       exactly one copy per cycle so the loop never shows a gap -->
   <div class="ticker">
-    <div class="ticker-track">
+    <div class="ticker-track" id="ticker-track">
       <div class="ticker-content">
         <span>Integrated <span class="ticker-highlight">Shopify Point of Sale</span> payments</span>
         <span class="ticker-dot"></span>
@@ -193,21 +164,7 @@
         <span class="ticker-dot"></span>
         <span>Instant order fulfillment</span>
         <span class="ticker-dot"></span>
-        <span>Tap to pay with <span class="ticker-highlight">Express</span></span>
-        <span class="ticker-dot"></span>
-        <span>Fast · Secure · <span class="ticker-green">Seamless</span></span>
-        <span class="ticker-dot"></span>
-      </div>
-      <div class="ticker-content" aria-hidden="true">
-        <span>Integrated <span class="ticker-highlight">Shopify Point of Sale</span> payments</span>
-        <span class="ticker-dot"></span>
-        <span><span class="ticker-highlight">Stitch Express</span> in person</span>
-        <span class="ticker-dot"></span>
-        <span>Instant order fulfillment</span>
-        <span class="ticker-dot"></span>
-        <span>Tap to pay with <span class="ticker-highlight">Express</span></span>
-        <span class="ticker-dot"></span>
-        <span>Fast · Secure · <span class="ticker-green">Seamless</span></span>
+        <span>Earn <span class="ticker-highlight">loyalty</span> on every transaction</span>
         <span class="ticker-dot"></span>
       </div>
     </div>

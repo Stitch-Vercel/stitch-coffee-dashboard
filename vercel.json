@@ -8,7 +8,9 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "public" }
+      "config": {
+        "distDir": "public"
+      }
     }
   ],
   "routes": [
@@ -47,6 +49,10 @@
     {
       "src": "/vendor/(.*)",
       "dest": "/vendor/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
     }
   ]
 }

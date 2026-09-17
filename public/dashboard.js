@@ -13,8 +13,11 @@
   const COFFEE_PRICE_CENTS = 200;
   const ALL_TIME_MILESTONES_CENTS = [500_000, 1_000_000];
   const MILESTONE_STEP_CENTS = 500_000; // after the early ladder, a milestone every R5k
-  const GOAL_RING_RADIUS = 29;
-  const GOAL_RING_CIRCUMFERENCE = 2 * Math.PI * GOAL_RING_RADIUS;
+  const LEADERBOARD_ROWS = 6;
+  const TICKER_FALLBACK_SPEED_PX_PER_SEC = 60;
+  // Thousands are grouped with a no-break space per the Stitch design;
+  // decimals always use a point.
+  const THOUSANDS_SEPARATOR = ' ';
   const DASHBOARD_CONFIG = window.STITCH_COFFEE_DASHBOARD_CONFIG || {};
   const DEMO_MODE = DASHBOARD_CONFIG.demoMode === true;
   // DEMO ONLY: replace unmatched cards with deterministic names from the staff card list.
@@ -64,14 +67,12 @@
     clock: $('clock'),
     heroRevenue: $('hero-revenue'),
     heroTransactions: $('hero-transactions'),
-    statTransactions: $('stat-transactions'),
     statSuccessRate: $('stat-success-rate'),
     statAvgTransaction: $('stat-avg-transaction'),
     statBestHour: $('stat-best-hour'),
+    statBestHourCopy: $('stat-best-hour-copy'),
     statAllTimeRevenue: $('stat-all-time-revenue'),
     statAllTimeTransactions: $('stat-all-time-transactions'),
-    goalRing: $('goal-ring'),
-    goalRingProgress: $('goal-ring-progress'),
     goalPercent: $('goal-percent'),
     goalCopy: $('goal-copy'),
     goalTrackFill: $('goal-track-fill'),
@@ -82,9 +83,7 @@
     hourlyChart: $('hourly-chart'),
     transactionsFeed: $('transactions-feed'),
     leaderboardFeed: $('leaderboard-feed'),
-    funCups: $('fun-cups'),
-    funStreak: $('fun-streak'),
-    funWeekly: $('fun-weekly'),
+    tickerTrack: $('ticker-track'),
     saleMoment: $('sale-moment'),
     saleMomentAmount: $('sale-moment-amount'),
     saleMomentMeta: $('sale-moment-meta'),
@@ -93,14 +92,21 @@
   };
 
   // ---- Formatting ----
+  // "1234567.5" -> "1 234 567.50": grouped integer part, point decimals
+  function formatAmount(rands, decimals = 2) {
+    const fixed = Math.abs(Number(rands) || 0).toFixed(decimals);
+    const [integerPart, fractionPart] = fixed.split('.');
+    const grouped = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, THOUSANDS_SEPARATOR);
+    return decimals > 0 ? `${grouped}.${fractionPart}` : grouped;
+  }
+
+  function formatCount(value) {
+    return formatAmount(Math.round(Number(value) || 0), 0);
+  }
+
   function formatZAR(cents) {
     const value = Number.isFinite(Number(cents)) ? Number(cents) : 0;
-    const rands = Math.abs(value) / 100;
-    const formatted = rands.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    return `R ${formatted}`;
+    return `R ${formatAmount(value / 100, 2)}`;
   }
 
   function formatTime(hour) {
@@ -112,10 +118,24 @@
     const rands = Math.abs(value) / 100;
 
     if (rands >= 1000) {
-      return `R ${rands.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+      return `R ${formatAmount(rands, 0)}`;
     }
 
     return formatZAR(value);
+  }
+
+  // API sends "08:00 - 09:00"; the design shows "08:00–09:00"
+  function formatBestHour(label) {
+    if (!label) return '--:00';
+    return String(label).replace(/\s*-\s*/, '–');
+  }
+
+  function getBestHourCopy(label) {
+    const hour = parseInt(String(label || ''), 10);
+    if (!Number.isFinite(hour)) return 'approved sales peak';
+    if (hour < 12) return 'the morning queue';
+    if (hour < 17) return 'the afternoon rush';
+    return 'the evening wind-down';
   }
 
   function getCoffeeCount(cents) {
@@ -307,7 +327,7 @@
   function celebrateMilestone() {
     if (typeof confetti !== 'function') return;
 
-    const colors = ['#E28B44', '#6E2CFF', '#0E9F5E', '#6F4E37', '#FFF3E6'];
+    const colors = ['#6E2CFF', '#FF5B00', '#00E979', '#100E13', '#F3ECFF'];
 
     confetti({ particleCount: 160, spread: 100, startVelocity: 45, scalar: 1.1, origin: { y: 0.55 }, colors });
 
@@ -385,8 +405,7 @@
   // ---- Recent Transactions ----
   function renderRecentTransactions(transactions) {
     if (!transactions || !transactions.length) {
-      els.transactionsFeed.innerHTML =
-        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No transactions yet</div>';
+      els.transactionsFeed.innerHTML = '<div class="card-empty">No transactions yet</div>';
       return;
     }
 
@@ -401,17 +420,19 @@
     els.transactionsFeed.innerHTML = items
       .map((tx, index) => {
         const status = String(tx.status || '').toLowerCase();
-        const statusClass = status === 'failure' ? 'failed' : status;
+        const statusClass = status === 'success' ? 'success' : status === 'pending' ? 'pending' : 'failed';
+        const statusLabel = status === 'success' ? 'Approved' : status === 'pending' ? 'Pending' : 'Declined';
         const place = getTransactionPlace(tx);
         const buyerName = getBuyerDisplayName(tx);
 
         return `
         <div class="tx-item${index === 0 && hasNewTransaction ? ' tx-new' : ''}">
-          <span class="tx-status-dot ${statusClass}"></span>
+          <span class="tx-icon"><span class="material-icons" aria-hidden="true">local_cafe</span></span>
           <div class="tx-details">
             <div class="tx-id">${escapeHtml(buyerName)}</div>
             <div class="tx-time">${relativeTime(tx.time)} · ${escapeHtml(place)}</div>
           </div>
+          <span class="tx-tag ${statusClass}">${statusLabel}</span>
           <div class="tx-amount">${formatZAR(tx.amount_cents)}</div>
         </div>`;
       })
@@ -420,11 +441,10 @@
 
   function renderLeaderboard(leaderboard) {
     // The API returns the board pre-ranked by revenue; render it as-is.
-    const visibleLeaderboard = (leaderboard || []).slice(0, 8);
+    const visibleLeaderboard = (leaderboard || []).slice(0, LEADERBOARD_ROWS);
 
     if (!visibleLeaderboard.length) {
-      els.leaderboardFeed.innerHTML =
-        '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">No coffee buyers yet</div>';
+      els.leaderboardFeed.innerHTML = '<div class="card-empty">No coffee buyers yet</div>';
       return;
     }
 
@@ -442,10 +462,9 @@
 
     els.leaderboardFeed.innerHTML = leaderboardWithTransactions
       .map((entry, index) => {
-        const progress = Math.max(8, (entry.revenue / maxRevenue) * 100);
-        const transactionLabel =
-          entry.transaction_count === 1 ? 'transaction' : 'transactions';
-        const purchaseCopy = `${entry.transaction_count.toLocaleString()} ${transactionLabel}`;
+        const progress = Math.max(6, (entry.revenue / maxRevenue) * 100);
+        const cups = getCoffeeCount(entry.revenue);
+        const purchaseCopy = `${formatCount(cups)} ${cups === 1 ? 'cup' : 'cups'}`;
         const leaderboardName = DEMO_MODE
           ? getDemoNameForKey(
               [
@@ -458,10 +477,10 @@
               index * 7
             )
           : entry.display_name || 'Coffee buyer';
-        const cardLabel = DEMO_MODE ? 'STAFF CARD' : entry.is_known ? 'STAFF CARD' : 'UNCLAIMED';
+        const cardLabel = DEMO_MODE || entry.is_known ? 'Staff card' : 'Unclaimed';
 
         return `
-        <div class="leaderboard-item">
+        <div class="leaderboard-item${index === 0 ? ' is-leader' : ''}">
           <div class="leaderboard-rank">${entry.rank || index + 1}</div>
           <div class="leaderboard-main">
             <div class="leaderboard-topline">
@@ -479,19 +498,26 @@
         </div>`;
       })
       .join('');
+
+    trimOverflowingRows(els.leaderboardFeed, '.leaderboard-item');
+  }
+
+  // Hide trailing rows that would be clipped by the card so the feed never
+  // shows a half-cut entry on smaller-than-expected panels.
+  function trimOverflowingRows(feed, rowSelector) {
+    const rows = Array.from(feed.querySelectorAll(rowSelector));
+    rows.forEach((row) => row.classList.remove('is-overflow'));
+    const limit = feed.getBoundingClientRect().bottom + 1;
+    for (let i = rows.length - 1; i > 0; i--) {
+      if (rows[i].getBoundingClientRect().bottom <= limit) break;
+      rows[i].classList.add('is-overflow');
+    }
   }
 
   function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
-  }
-
-  // ---- Success Rate Coloring ----
-  function getSuccessRateClass(rate) {
-    if (rate >= 95) return 'rate-green';
-    if (rate >= 80) return 'rate-yellow';
-    return 'rate-red';
   }
 
   function getAllTimeMilestone(totalRevenueCents) {
@@ -507,16 +533,10 @@
     const progress = Math.min(allTimeRevenueCents / nextMilestone, 1);
     const percent = Math.floor(progress * 100);
 
-    // Update SVG ring
-    const dashLength = (percent / 100) * GOAL_RING_CIRCUMFERENCE;
-    if (els.goalRingProgress) {
-      els.goalRingProgress.setAttribute('stroke-dasharray', `${dashLength} 999`);
-      els.goalRingProgress.classList.toggle('goal-complete', percent >= 100);
-    }
-
     els.goalPercent.textContent = `${percent}%`;
-    els.goalCopy.innerHTML = `${formatCompactZAR(allTimeRevenueCents)} <span class="signal-value-sub">/ ${formatCompactZAR(nextMilestone)}</span>`;
+    els.goalCopy.innerHTML = `${formatCompactZAR(allTimeRevenueCents)} <span class="milestone-target">/ ${formatCompactZAR(nextMilestone)}</span>`;
     els.goalTrackFill.style.width = `${percent}%`;
+    els.goalTrackFill.classList.toggle('goal-complete', percent >= 100);
   }
 
   function updatePace(todayRevenueCents) {
@@ -542,14 +562,14 @@
     const hourlyRunRate = Math.round(todayRevenueCents / elapsedMinutes * 60);
 
     els.paceProjection.textContent = formatZAR(projectedClose);
-    els.paceCopy.innerHTML = `<span class="pace-rate">${formatCompactZAR(hourlyRunRate)}</span> per hour run-rate`;
+    els.paceCopy.innerHTML = `<span class="pace-rate">${formatZAR(hourlyRunRate)}</span> per hour`;
   }
 
   function updateMilestone(allTimeRevenueCents, milestoneOverrideCents) {
     const nextMilestone = milestoneOverrideCents ?? getAllTimeMilestone(allTimeRevenueCents);
-    const remaining = nextMilestone - allTimeRevenueCents;
+    const remaining = Math.max(0, nextMilestone - allTimeRevenueCents);
     els.milestoneValue.textContent = formatCompactZAR(nextMilestone);
-    els.milestoneCopy.textContent = `${formatCompactZAR(remaining)} in sales to go`;
+    els.milestoneCopy.textContent = formatCompactZAR(remaining);
   }
 
   function showSaleMoment(tx) {
@@ -592,7 +612,6 @@
   // ---- Update Dashboard ----
   function updateDashboard(data) {
     const today = data.today || {};
-    const week = data.week || {};
     const realAllTimeRevenueCents = getRealAllTimeRevenueCents(data);
     const allTimeRevenueCents = DEMO_MODE ? getDemoAllTimeRevenueCents() : realAllTimeRevenueCents;
     const milestoneOverrideCents = DEMO_MODE ? DEMO_MILESTONE_TARGET_CENTS : undefined;
@@ -603,23 +622,20 @@
 
     // Hero
     updateHeroOdometer(today.revenue_cents);
-    els.heroTransactions.innerHTML = `<strong>${(today.transactions || 0).toLocaleString()}</strong> transactions`;
+    const transactionCount = today.transactions || 0;
+    els.heroTransactions.innerHTML = `<strong>${formatCount(transactionCount)}</strong> ${transactionCount === 1 ? 'transaction' : 'transactions'}`;
 
     // Stats
-    animateNumber(els.statTransactions, today.transactions, (v) => Math.round(v).toLocaleString());
-
-    const rate = today.success_rate ?? 0;
+    const rate = Number(today.success_rate ?? 0);
     els.statSuccessRate.textContent = `${rate.toFixed(1)}%`;
-    els.statSuccessRate.className = `stat-value ${getSuccessRateClass(rate)}`;
 
     animateNumber(els.statAvgTransaction, today.avg_transaction_cents, formatZAR);
 
-    els.statBestHour.textContent = streak.best_hour || '--:00';
+    els.statBestHour.textContent = formatBestHour(streak.best_hour);
+    els.statBestHourCopy.textContent = getBestHourCopy(streak.best_hour);
 
     animateNumber(els.statAllTimeRevenue, allTimeRevenueCents, formatZAR);
-    animateNumber(els.statAllTimeTransactions, getCoffeeCount(allTimeRevenueCents), (v) =>
-      Math.round(v).toLocaleString()
-    );
+    animateNumber(els.statAllTimeTransactions, getCoffeeCount(allTimeRevenueCents), formatCount);
 
     updateAllTimeMilestone(allTimeRevenueCents, milestoneOverrideCents);
     updatePace(today.revenue_cents ?? 0);
@@ -634,13 +650,6 @@
 
     // Leaderboard
     renderLeaderboard(data.leaderboard);
-
-    // Fun stats
-    animateNumber(els.funCups, getCoffeeCount(today.revenue_cents), (v) =>
-      Math.round(v).toLocaleString()
-    );
-    animateNumber(els.funStreak, streak.consecutive_successes ?? 0, (v) => Math.round(v).toLocaleString());
-    animateNumber(els.funWeekly, week.revenue_cents ?? 0, formatZAR);
   }
 
   // ---- Fetch Stats ----
@@ -686,34 +695,45 @@
     }
   }
 
-  // ---- Theme Toggle (top-left coffee logo) ----
-  function applyTheme(dark) {
-    document.body.classList.toggle('theme-dark', dark);
-  }
+  // ---- Ticker ----
+  // Clone the message until it spans the strip plus one extra copy, then
+  // scroll exactly one copy's width per cycle. Because the loop resets at a
+  // seam that is pixel-identical to the start, the text wraps around without
+  // ever leaving blank space, however short the message is.
+  function initTicker() {
+    const track = els.tickerTrack;
+    const base = track?.querySelector('.ticker-content');
+    if (!track || !base) return;
 
-  function getThemeFromUrl() {
-    const theme = new URLSearchParams(window.location.search).get('theme');
-    return ['dark', 'light'].includes(theme) ? theme : null;
-  }
+    const speed =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ticker-speed')) ||
+      TICKER_FALLBACK_SPEED_PX_PER_SEC;
 
-  function initThemeToggle() {
-    const urlTheme = getThemeFromUrl();
-    const saved = localStorage.getItem('coffee-dash-theme');
+    function layout() {
+      track.querySelectorAll('.ticker-content[aria-hidden]').forEach((clone) => clone.remove());
 
-    if (urlTheme) {
-      applyTheme(urlTheme === 'dark');
-    } else if (saved === 'dark') {
-      applyTheme(true);
+      const copyWidth = base.getBoundingClientRect().width;
+      const viewportWidth = track.parentElement.getBoundingClientRect().width;
+      if (!copyWidth || !viewportWidth) return;
+
+      // Enough copies that a full copy is still queued when the shift completes
+      const copies = Math.ceil(viewportWidth / copyWidth) + 1;
+      for (let i = 1; i < copies; i++) {
+        const clone = base.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        track.appendChild(clone);
+      }
+
+      track.style.setProperty('--ticker-shift', `-${copyWidth}px`);
+      track.style.setProperty('--ticker-duration', `${copyWidth / speed}s`);
     }
 
-    const btn = document.getElementById('theme-toggle');
-    if (btn) {
-      btn.addEventListener('click', function () {
-        const nowDark = !document.body.classList.contains('theme-dark');
-        applyTheme(nowDark);
-        localStorage.setItem('coffee-dash-theme', nowDark ? 'dark' : 'light');
-      });
+    layout();
+    // Web fonts change the copy width once they land
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(layout);
     }
+    window.addEventListener('resize', layout);
   }
 
   // ---- Local Dev Tools ----
@@ -747,8 +767,8 @@
 
   // ---- Init ----
   function init() {
-    // Theme toggle
-    initThemeToggle();
+    // Gap-free marquee
+    initTicker();
 
     // Local-only dev tools
     initDevTools();
