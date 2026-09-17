@@ -175,6 +175,9 @@ h1, h2 {
 }
 
 /* ---- Live Sale Moment ---- */
+/* The card is a 2px gradient frame: a rotating conic gradient sits behind
+   an inset white panel. The frame is a plain absolutely-positioned element
+   spun with transform, so it needs no @property support on TV browsers. */
 .sale-moment {
   position: fixed;
   top: 104px;
@@ -183,29 +186,61 @@ h1, h2 {
   width: max-content;
   min-width: 380px;
   max-width: 640px;
-  padding: 18px 30px 18px 26px;
-  border: 1px solid var(--border-2);
+  padding: 2px;
   border-radius: var(--radius-lg);
   background: var(--bg-1);
   box-shadow: var(--shadow-500);
   opacity: 0;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  text-align: left;
   overflow: hidden;
   transform: translate(-50%, -18px) scale(0.96);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.4s ease;
 }
 
 .sale-moment.show {
   opacity: 1;
   transform: translate(-50%, 0) scale(1);
+  animation: saleGlow 2.4s ease-in-out infinite;
+}
+
+/* Rotating gradient frame — oversized so its corners never show while spinning */
+.sale-moment::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  aspect-ratio: 1 / 1;
+  margin: -100% 0 0 -100%;
+  background: conic-gradient(
+    from 0deg,
+    var(--stitch-violet) 0deg,
+    var(--stitch-amber) 110deg,
+    var(--stitch-violet-haze) 180deg,
+    var(--stitch-amber) 250deg,
+    var(--stitch-violet) 360deg
+  );
+  transform: rotate(0deg);
+}
+
+.sale-moment.show::before {
+  animation: saleSpin 3.2s linear infinite;
+}
+
+.sale-moment-inner {
+  position: relative;
+  border-radius: 14px;
+  background: var(--bg-1);
+  padding: 18px 30px 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-align: left;
+  overflow: hidden;
 }
 
 /* One-shot highlight sweep across the card */
-.sale-moment::after {
+.sale-moment-inner::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -214,7 +249,7 @@ h1, h2 {
   pointer-events: none;
 }
 
-.sale-moment.show::after {
+.sale-moment.show .sale-moment-inner::after {
   animation: saleShimmer 1.3s ease 0.3s;
 }
 
@@ -228,19 +263,25 @@ h1, h2 {
   min-width: 0;
 }
 
-/* Cup illustration — pour stream draws in, coffee rises, steam follows */
+/* Cup illustration — violet pour stream draws in, violet-to-amber brew
+   rises, steam follows */
 .sale-cup-body,
-.sale-cup-handle {
+.sale-cup-handle,
+.sale-cup-saucer {
   fill: none;
-  stroke: var(--fg-1);
+  stroke: var(--stitch-black);
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
+.sale-cup-saucer {
+  stroke: var(--stitch-titanium);
+}
+
 .sale-cup-pour {
   fill: none;
-  stroke: var(--stitch-amber);
+  stroke: var(--stitch-violet);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-dasharray: 1 1;
@@ -255,7 +296,7 @@ h1, h2 {
    translate-scale-translate since transform-box isn't supported on
    the old Chromium forks TV browsers run */
 .sale-cup-coffee {
-  fill: var(--stitch-amber);
+  fill: url(#sale-cup-brew);
   transform: translate(0, 49px) scaleY(0.02) translate(0, -49px);
 }
 
@@ -265,7 +306,7 @@ h1, h2 {
 
 .sale-cup-steam {
   fill: none;
-  stroke: var(--fg-3);
+  stroke: var(--stitch-violet);
   stroke-width: 2.5;
   stroke-linecap: round;
   opacity: 0;
@@ -280,9 +321,14 @@ h1, h2 {
 }
 
 .sale-moment-kicker {
-  color: var(--fg-accent);
   font-size: 13px;
   font-weight: 600;
+  background: linear-gradient(90deg, var(--stitch-violet), var(--stitch-amber));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: var(--stitch-violet);
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
 .sale-moment-amount {
@@ -1108,6 +1154,16 @@ h1, h2 {
 
 @keyframes saleShimmer {
   to { transform: translateX(100%); }
+}
+
+@keyframes saleSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Soft violet/amber halo that breathes while the card is up */
+@keyframes saleGlow {
+  0%, 100% { box-shadow: var(--shadow-500), 0 0 28px rgba(110, 44, 255, 0.22); }
+  50% { box-shadow: var(--shadow-500), 0 0 40px rgba(255, 91, 0, 0.26); }
 }
 
 @keyframes salePour {

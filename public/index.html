@@ -19,22 +19,31 @@
   </div>
 
   <div id="sale-moment" class="sale-moment" aria-live="polite">
-    <div class="sale-moment-art" aria-hidden="true">
-      <svg class="sale-cup" viewBox="0 0 64 64" width="72" height="72">
-        <path class="sale-cup-pour" d="M28 3 V 31" pathLength="1"></path>
-        <!-- Coffee is the cup-interior shape scaled up from the bottom; no
-             clipPath, since old TV browsers drop clips on animated children -->
-        <path class="sale-cup-coffee" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
-        <path class="sale-cup-body" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
-        <path class="sale-cup-handle" d="M41 32 h3.5 a5.5 5.5 0 0 1 0 11 H41"></path>
-        <path class="sale-cup-steam steam-1" d="M23 23 q 3.5 -4 0 -8 q -3.5 -4 0 -7"></path>
-        <path class="sale-cup-steam steam-2" d="M33 23 q 3.5 -4 0 -8 q -3.5 -4 0 -7"></path>
-      </svg>
-    </div>
-    <div class="sale-moment-body">
-      <div class="sale-moment-kicker">New coffee sale</div>
-      <div class="sale-moment-amount" id="sale-moment-amount">R 0.00</div>
-      <div class="sale-moment-meta" id="sale-moment-meta">Fresh cup paid on Express</div>
+    <div class="sale-moment-inner">
+      <div class="sale-moment-art" aria-hidden="true">
+        <svg class="sale-cup" viewBox="0 0 64 64" width="76" height="76">
+          <defs>
+            <linearGradient id="sale-cup-brew" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#6E2CFF"></stop>
+              <stop offset="1" stop-color="#FF5B00"></stop>
+            </linearGradient>
+          </defs>
+          <path class="sale-cup-pour" d="M28 3 V 31" pathLength="1"></path>
+          <!-- Coffee is the cup-interior shape scaled up from the bottom; no
+               clipPath, since old TV browsers drop clips on animated children -->
+          <path class="sale-cup-coffee" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
+          <path class="sale-cup-body" d="M15 29 H41 v11 a9 9 0 0 1 -9 9 h-8 a9 9 0 0 1 -9 -9 z"></path>
+          <path class="sale-cup-handle" d="M41 32 h3.5 a5.5 5.5 0 0 1 0 11 H41"></path>
+          <path class="sale-cup-saucer" d="M12 54 H44"></path>
+          <path class="sale-cup-steam steam-1" d="M23 23 q 3.5 -4 0 -8 q -3.5 -4 0 -7"></path>
+          <path class="sale-cup-steam steam-2" d="M33 23 q 3.5 -4 0 -8 q -3.5 -4 0 -7"></path>
+        </svg>
+      </div>
+      <div class="sale-moment-body">
+        <div class="sale-moment-kicker">New coffee sale</div>
+        <div class="sale-moment-amount" id="sale-moment-amount">R 0.00</div>
+        <div class="sale-moment-meta" id="sale-moment-meta">Fresh cup paid on Express</div>
+      </div>
     </div>
   </div>
 
