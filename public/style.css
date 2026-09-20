@@ -57,11 +57,14 @@
   /* ---- Component tokens the theme re-points ---- */
   --fg-brand-strong: var(--stitch-violet-deep);
   --fg-faint: var(--stitch-titanium);
-  --hero-gradient: linear-gradient(180deg, #8B54FF 0%, #6E2CFF 34%, #5A21D6 68%, #4F1FBA 100%);
-  --hero-fg: var(--stitch-white);
-  --hero-fg-muted: rgba(255, 255, 255, 0.75);
-  --hero-divider: rgba(255, 255, 255, 0.28);
-  --leader-bg: var(--stitch-black);
+  --hero-gradient: linear-gradient(180deg, #DCCBFF 0%, var(--stitch-violet-haze) 55%, var(--stitch-white) 100%);
+  --hero-fg: var(--stitch-violet-deep);
+  --hero-fg-muted: rgba(42, 41, 44, 0.75);
+  --hero-divider: rgba(79, 31, 186, 0.2);
+  --leader-bg: rgba(255, 91, 0, 0.14);
+  --leader-fg-muted: rgba(42, 41, 44, 0.75);
+  --leader-rank: var(--fg-warning);
+  --leader-track: rgba(255, 91, 0, 0.16);
   --pill-bg: var(--stitch-black);
   --ticker-bg: var(--stitch-black);
   --cup-stroke: var(--stitch-black);
@@ -1098,26 +1101,26 @@ h1, h2 {
   color: var(--fg-3);
 }
 
-/* Leader gets the inverted card with the amber accent */
+/* Leader gets a translucent amber wash with matching accents */
 .leaderboard-item.is-leader {
   background: var(--leader-bg);
 }
 
 .leaderboard-item.is-leader .leaderboard-rank {
-  color: var(--stitch-amber);
+  color: var(--leader-rank);
 }
 
 .leaderboard-item.is-leader .leaderboard-name,
 .leaderboard-item.is-leader .leaderboard-value {
-  color: var(--fg-on-dark);
+  color: var(--fg-1);
 }
 
 .leaderboard-item.is-leader .leaderboard-subline {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--leader-fg-muted);
 }
 
 .leaderboard-item.is-leader .leaderboard-progress {
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--leader-track);
 }
 
 .leaderboard-item.is-leader .leaderboard-progress-fill {
@@ -1298,6 +1301,12 @@ h1, h2 {
     #100E13 100%
   );
   --leader-bg: rgba(255, 91, 0, 0.14);
+  --hero-fg: var(--stitch-white);
+  --hero-fg-muted: rgba(255, 255, 255, 0.75);
+  --hero-divider: rgba(255, 255, 255, 0.28);
+  --leader-fg-muted: rgba(255, 255, 255, 0.65);
+  --leader-rank: var(--stitch-amber);
+  --leader-track: rgba(255, 255, 255, 0.16);
   --pill-bg: var(--stitch-violet);
   --ticker-bg: var(--stitch-carbon);
   --cup-stroke: var(--stitch-white);
@@ -1334,11 +1343,6 @@ h1, h2 {
 
 :root[data-theme='dark'] .hour-count.count-active {
   color: var(--fg-1);
-}
-
-/* The leader row is an amber wash rather than an inverted card */
-:root[data-theme='dark'] .leaderboard-item.is-leader .leaderboard-progress {
-  background: rgba(255, 255, 255, 0.16);
 }
 
 :root[data-theme='dark'] .sale-moment-inner::after {
